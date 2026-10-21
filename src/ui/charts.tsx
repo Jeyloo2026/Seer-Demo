@@ -18,6 +18,7 @@ export function LineChart({
   className,
   events = [],
   compareTo,
+  fit = false,
 }: {
   series: Series[];
   focus?: string | null;
@@ -28,6 +29,8 @@ export function LineChart({
   className?: string;
   events?: { t: number; label: string }[];
   compareTo?: string | null;
+  /** Fit the y-axis to the data range instead of starting at zero (prices). */
+  fit?: boolean;
 }) {
   const ref = useRef<SVGSVGElement>(null);
   const [hoverX, setHoverX] = useState<number | null>(null);
@@ -36,27 +39,33 @@ export function LineChart({
     H = height,
     P = { l: 8, r: 52, t: 12, b: 26 };
 
-  const { t0, t1, vmax } = useMemo(() => {
+  const { t0, t1, vmax, vmin } = useMemo(() => {
     let t0 = Infinity,
       t1 = -Infinity,
-      vmax = 0;
+      vmax = 0,
+      vmin = Infinity;
     for (const s of series)
       for (const [t, v] of s.data) {
         if (t < t0) t0 = t;
         if (t > t1) t1 = t;
         if (v > vmax) vmax = v;
+        if (v < vmin) vmin = v;
       }
-    return { t0, t1, vmax: yMax ?? niceMax(vmax) };
-  }, [series, yMax]);
+    if (fit && isFinite(vmin)) {
+      const pad = (vmax - vmin) * 0.15 || vmax * 0.02;
+      return { t0, t1, vmax: vmax + pad, vmin: Math.max(0, vmin - pad) };
+    }
+    return { t0, t1, vmax: yMax ?? niceMax(vmax), vmin: 0 };
+  }, [series, yMax, fit]);
 
   if (!series.length || !isFinite(t0)) return <div className={cx("grid place-items-center text-[13px] text-muted", className)} style={{ height }}>No price history yet</div>;
 
   const x = (t: number) => P.l + ((t - t0) / Math.max(1, t1 - t0)) * (W - P.l - P.r);
-  const y = (v: number) => P.t + (1 - v / vmax) * (H - P.t - P.b);
+  const y = (v: number) => P.t + (1 - (v - vmin) / (vmax - vmin || 1)) * (H - P.t - P.b);
   const path = (d: [number, number][]) => d.map(([t, v], i) => `${i ? "L" : "M"}${x(t).toFixed(1)},${y(v).toFixed(1)}`).join("");
 
   const active = hoverName ?? focus ?? null;
-  const ticks = [0, 0.25, 0.5, 0.75, 1].map((f) => f * vmax);
+  const ticks = [0, 0.25, 0.5, 0.75, 1].map((f) => vmin + f * (vmax - vmin));
   const xt = Array.from({ length: 5 }, (_, i) => t0 + ((t1 - t0) * i) / 4);
 
   const tHover = hoverX != null ? t0 + ((hoverX - P.l) / (W - P.l - P.r)) * (t1 - t0) : null;

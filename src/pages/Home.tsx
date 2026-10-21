@@ -3,7 +3,8 @@ import { Link } from "react-router-dom";
 import { Shell, Container } from "../ui/Shell";
 import { APPS, AppGlyph, Arrow, ButtonLink, Diamond, Mark, cx, type AppKey } from "../ui/kit";
 import { LineChart } from "../ui/charts";
-import { normalize, useChart, useMarkets, type Market } from "../data/seer";
+import { useMarkets, type Market } from "../data/seer";
+import { useDecisionStory } from "../data/story";
 import { chainName, compact, kindOf, leader, marketPath, pct, ranked, usd, type Kind } from "../data/market";
 
 const REBRAND = "0xe7850b0d928aa40ab8732bd323fa4f6ef3c24b8a";
@@ -448,20 +449,7 @@ function PreviewCard({ app, title, to, children, className }: { app: AppKey; tit
   );
 }
 
-/** Shares of the field just before the decision (the last moment no design held > 60%). */
-export function useRebrandStory(rebrand?: Market) {
-  const { series } = useChart(100, REBRAND, rebrand?.outcomes);
-  return useMemo(() => {
-    const s = normalize((series || []).filter((x) => x.name !== "Invalid"));
-    if (!s.length || !s[0].data.length) return null;
-    const ts = s[0].data.map((d) => d[0]);
-    let k = ts.length - 1;
-    while (k > 0 && Math.max(...s.map((x) => x.data[k]?.[1] ?? 0)) > 0.6) k--;
-    const at = s.map((x) => ({ name: x.name, p: (x.data[k]?.[1] ?? 0) * 100 })).sort((a, b) => b.p - a.p);
-    const ef = at.find((x) => x.name === "Electric Foundation");
-    return { series: s.map((x) => ({ ...x, data: x.data.slice(0, k + 1) })), fav: at[0], ef, rankEf: at.findIndex((x) => x.name === "Electric Foundation") + 1, closeT: ts[k] };
-  }, [series]);
-}
+const useRebrandStory = (rebrand?: Market) => useDecisionStory(100, REBRAND, rebrand);
 
 function RebrandMini({ rebrand }: { rebrand?: Market }) {
   const story = useRebrandStory(rebrand);
