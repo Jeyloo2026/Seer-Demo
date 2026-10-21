@@ -1,0 +1,159 @@
+@import "tailwindcss";
+
+/*
+  Electric Foundation tokens, taken from the brand kit's "Color pallete" frame.
+  Rule of the system: violet is the only chromatic colour. It marks the one thing
+  the market is pointing at; everything else stays on the quiet neutral field.
+*/
+:root {
+  --bg: #f7f7f9;
+  --card: #ffffff;
+  --nested: #f1f1f4;
+  --line: #e4e4ea;
+  --line-strong: #d3d3dc;
+  --text: #17171c;
+  --text-2: #5c5c66;
+  --muted: #8e8e99;
+  --signal: #7d33ff;
+  --signal-ink: #6c2bd9;
+  --signal-soft: #efe9fc;
+  --signal-fog: #e9eafa;
+  --on-signal: #ffffff;
+  --ink: #0c0a16;
+  --alert: #dc251c;
+  --shadow: 0 1px 2px rgb(23 23 28 / 0.04), 0 8px 24px -12px rgb(23 23 28 / 0.12);
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --bg: #101013;
+  --card: #1a1a1e;
+  --nested: #1f1f24;
+  --line: #2a2a30;
+  --line-strong: #37373f;
+  --text: #ededf2;
+  --text-2: #a8a8b3;
+  --muted: #67676f;
+  --signal: #7d33ff;
+  --signal-ink: #9c6ff2;
+  --signal-soft: #241e33;
+  --signal-fog: #1c1830;
+  --on-signal: #ffffff;
+  --ink: #0c0a16;
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 12px 32px -16px rgb(0 0 0 / 0.6);
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-card: var(--card);
+  --color-nested: var(--nested);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-text: var(--text);
+  --color-text-2: var(--text-2);
+  --color-muted: var(--muted);
+  --color-signal: var(--signal);
+  --color-signal-ink: var(--signal-ink);
+  --color-signal-soft: var(--signal-soft);
+  --color-signal-fog: var(--signal-fog);
+  --color-on-signal: var(--on-signal);
+  --color-ink: var(--ink);
+  --color-alert: var(--alert);
+  --font-sans: "Inter Tight", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, "SFMono-Regular", monospace;
+  --shadow-card: var(--shadow);
+}
+
+html {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-weight: 450;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "ss01", "cv11";
+}
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+::selection {
+  background: var(--signal);
+  color: var(--on-signal);
+}
+
+/* Numbers always set in mono with tabular figures, like the kit's Suisse Mono numerals. */
+.num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+/* Small uppercase mono label, the kit's metadata voice. */
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.display {
+  font-weight: 500;
+  letter-spacing: -0.035em;
+  line-height: 0.95;
+}
+
+.hairline {
+  border-color: var(--line);
+}
+
+.focus-ring:focus-visible,
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* 45-degree hatch, from the mark's construction grid; used for "unknown" and "invalid" mass. */
+.hatch {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    var(--line-strong) 0 1px,
+    transparent 1px 6px
+  );
+}
+
+.scroll-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+.live-dot {
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+.rise {
+  animation: rise 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
