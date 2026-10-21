@@ -84,7 +84,7 @@ export default function Opportunity() {
             </div>
           </div>
 
-          <div className="mt-12 grid gap-3 md:grid-cols-3">
+          <div className="mt-12 grid grid-cols-[minmax(0,1fr)] gap-3 md:grid-cols-3">
             {CONTESTS.map((x) => {
               const mk = byId.get(x.id);
               const st = mk ? statusOf(mk) : null;
@@ -151,7 +151,7 @@ function OpenContest({ m, c }: { m: Market; c: (typeof CONTESTS)[0] }) {
   const max = outs[0]?.p ?? 1;
 
   return (
-    <div className="grid gap-8 xl:grid-cols-[1fr_380px]">
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-8 xl:grid-cols-[minmax(0,1fr)_380px]">
       <div className="min-w-0 space-y-8">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div className="min-w-0">

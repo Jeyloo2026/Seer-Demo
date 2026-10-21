@@ -104,9 +104,11 @@ export function Shell({ app, children, wide = false }: { app: AppKey; children: 
             >
               <Icon name={theme === "dark" ? "sun" : "moon"} />
             </button>
-            <Button size="sm" className="hidden sm:inline-flex !h-9" onClick={() => setWallet(true)}>
-              Connect
-            </Button>
+            <span className="hidden sm:block">
+              <Button size="sm" className="!h-9" onClick={() => setWallet(true)}>
+                Connect
+              </Button>
+            </span>
             <button onClick={() => setMenu((m) => !m)} className="lg:hidden h-9 w-9 grid place-items-center rounded-full text-text-2 hover:bg-nested" aria-label="Menu" aria-expanded={menu}>
               <svg viewBox="0 0 16 16" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.5">
                 {menu ? <path d="M4 4l8 8M12 4l-8 8" /> : <path d="M2.5 5h11M2.5 11h11" />}

@@ -152,13 +152,13 @@ export default function Explorer() {
       <Container wide className="py-8">
         {/* Etherscan-style twin feeds */}
         {!q && !kind && !status && !chain && (
-          <div className="mb-10 grid gap-4 lg:grid-cols-2">
+          <div className="mb-10 grid grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-2">
             <Feed title="Most traded" rows={top} right={(e) => usd(e.m.vol)} nav={nav} />
             <Feed title="Newest markets" rows={newest} right={(e) => (e.m.created ? ago(e.m.created, now) : "—")} nav={nav} />
           </div>
         )}
 
-        <div className="grid gap-8 lg:grid-cols-[240px_1fr]">
+        <div className="grid grid-cols-[minmax(0,1fr)] gap-8 lg:grid-cols-[240px_minmax(0,1fr)]">
           {/* Filters */}
           <aside className="space-y-7 lg:sticky lg:top-24 self-start">
             <FilterGroup title="Market type">

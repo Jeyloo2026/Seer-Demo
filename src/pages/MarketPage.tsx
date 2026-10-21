@@ -57,7 +57,7 @@ export default function MarketPage() {
         </nav>
 
         {/* Header */}
-        <div className="grid gap-8 lg:grid-cols-[1fr_380px]">
+        <div className="grid grid-cols-[minmax(0,1fr)] gap-8 lg:grid-cols-[minmax(0,1fr)_380px]">
           <div className="min-w-0">
             <div className="mb-4 flex flex-wrap items-center gap-2">
               <Badge tone="outline">{kind}</Badge>

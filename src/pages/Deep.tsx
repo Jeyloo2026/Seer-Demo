@@ -146,7 +146,7 @@ export default function Deep() {
           </div>
 
           {/* Contest switcher */}
-          <div className="mt-12 grid gap-3 md:grid-cols-3">
+          <div className="mt-12 grid grid-cols-[minmax(0,1fr)] gap-3 md:grid-cols-3">
             {CONTESTS.map((x) => {
               const es = entriesFor(x, byId);
               const v = x.ids.reduce((a, id) => a + (byId.get(id)?.vol ?? 0), 0);
@@ -186,7 +186,7 @@ export default function Deep() {
         {!ready || !entries.length ? (
           <Skeleton className="h-[480px]" />
         ) : (
-          <div className="grid gap-8 xl:grid-cols-[1fr_400px]">
+          <div className="grid grid-cols-[minmax(0,1fr)] gap-8 xl:grid-cols-[minmax(0,1fr)_400px]">
             <div className="min-w-0 space-y-8">
               <div className="flex flex-wrap items-end justify-between gap-4">
                 <div>

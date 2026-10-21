@@ -135,7 +135,7 @@ export default function Futarchy() {
       </section>
 
       <Container wide className="py-10">
-        <div className="grid gap-8 lg:grid-cols-[320px_1fr]">
+        <div className="grid grid-cols-[minmax(0,1fr)] gap-8 lg:grid-cols-[320px_minmax(0,1fr)]">
           {/* Proposals */}
           <aside className="lg:sticky lg:top-24 self-start">
             <div className="eyebrow mb-3">Proposals with conditional markets</div>
