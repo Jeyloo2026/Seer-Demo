@@ -30,8 +30,10 @@ jobs:
       - run: npm run build
         env:
           BASE_PATH: /${{ github.event.repository.name }}/
-      # Deep links (/deep, /risk, ...) fall back to the app shell.
-      - run: cp dist/index.html dist/404.html
+      # Each interface gets its own entry file so its link answers 200; anything else falls back to the shell.
+      - run: |
+          for r in app deep futarchy opportunity risk; do mkdir -p dist/$r && cp dist/index.html dist/$r/index.html; done
+          cp dist/index.html dist/404.html
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
