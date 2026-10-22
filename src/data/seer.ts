@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 
+/** Public files resolve against the deploy base, so the app also works from a sub-path. */
+export const asset = (p: string) => import.meta.env.BASE_URL + p;
+
 export const API = "https://app.seer.pm/.netlify/functions";
 
 export type Question = {
@@ -144,8 +147,8 @@ function boot() {
   if (booted) return;
   booted = true;
   Promise.all([
-    fetch("/data/markets.json").then((r) => r.json()),
-    fetch("/data/details.json").then((r) => r.json()).catch(() => []),
+    fetch(asset("data/markets.json")).then((r) => r.json()),
+    fetch(asset("data/details.json")).then((r) => r.json()).catch(() => []),
   ])
     .then(([snap, details]: [{ at: number; markets: Market[] }, Market[]]) => {
       setMarkets(snap.markets, { snapshotAt: snap.at, ready: true });
@@ -298,7 +301,7 @@ export function useChart(chainId: number, id: string | undefined, outcomes?: str
     if (!id) return;
     let dead = false;
     if (!chartCache.has(id)) {
-      fetch(`/data/charts/${id}.json`)
+      fetch(asset(`data/charts/${id}.json`))
         .then((r) => (r.ok ? r.json() : Promise.reject()))
         .then((raw: Series[]) => {
           if (dead || live) return;
@@ -353,7 +356,7 @@ export function useLeaderboard(app: "all" | "deepfund" | "opportunity" | "futarc
   const [rows, setRows] = useState<LeaderRow[] | null>(null);
   useEffect(() => {
     let dead = false;
-    fetch(`/data/leaderboard-${app}.json`)
+    fetch(asset(`data/leaderboard-${app}.json`))
       .then((r) => (r.ok ? r.json() : Promise.reject()))
       .then((j) => !dead && setRows((prev) => prev ?? j.rows))
       .catch(() => {});

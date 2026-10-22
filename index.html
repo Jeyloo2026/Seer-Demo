@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/svg+xml" href="%BASE_URL%favicon.svg" />
     <title>Seer — Decision infrastructure</title>
     <meta name="description" content="Seer is the market layer beneath prediction, governance and coordination apps. Six connected interfaces on the Electric Foundation identity." />
     <meta name="theme-color" content="#7D33FF" />
@@ -12,7 +12,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500&family=Inter+Tight:wght@400;500;600&display=swap" rel="stylesheet" />
     <script>
       try {
-        var t = localStorage.getItem("seer-theme");
+        var t = new URLSearchParams(location.search).get("theme") || localStorage.getItem("seer-theme");
         if (t) document.documentElement.dataset.theme = t;
       } catch (e) {}
     </script>

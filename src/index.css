@@ -6,7 +6,7 @@
   the market is pointing at; everything else stays on the quiet neutral field.
 */
 :root {
-  --bg: #f7f7f9;
+  --bg: #ededf2;
   --card: #ffffff;
   --nested: #f1f1f4;
   --line: #e4e4ea;
@@ -21,7 +21,7 @@
   --on-signal: #ffffff;
   --ink: #0c0a16;
   --alert: #dc251c;
-  --shadow: 0 1px 2px rgb(23 23 28 / 0.04), 0 8px 24px -12px rgb(23 23 28 / 0.12);
+  --shadow: 0 1px 2px rgb(23 23 28 / 0.04), 0 10px 30px -14px rgb(23 23 28 / 0.14);
   color-scheme: light;
 }
 
@@ -85,20 +85,17 @@ body {
   color: var(--on-signal);
 }
 
-/* Numbers always set in mono with tabular figures, like the kit's Suisse Mono numerals. */
+/* Numbers keep tabular figures so columns line up. */
 .num {
-  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.015em;
 }
 
-/* Small uppercase mono label, the kit's metadata voice. */
+/* Quiet sentence-case label. */
 .eyebrow {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--muted);
+  font-size: 13px;
+  letter-spacing: -0.005em;
+  color: var(--text-2);
 }
 
 .display {
@@ -156,4 +153,38 @@ select:focus-visible {
     animation-duration: 0.001ms !important;
     transition-duration: 0.001ms !important;
   }
+}
+
+/* Colour-blocked surfaces. Each re-points the theme tokens so anything inside repaints. */
+.tone-ink {
+  --card: #14121e;
+  --nested: rgb(255 255 255 / 0.1);
+  --line: rgb(255 255 255 / 0.14);
+  --line-strong: rgb(255 255 255 / 0.3);
+  --text: #ffffff;
+  --text-2: rgb(255 255 255 / 0.72);
+  --muted: rgb(255 255 255 / 0.5);
+  --signal-ink: #c7a8ff;
+  --signal-soft: rgb(255 255 255 / 0.12);
+  background: var(--card);
+  color: var(--text);
+}
+.tone-violet {
+  --card: #7d33ff;
+  --nested: rgb(255 255 255 / 0.18);
+  --line: rgb(255 255 255 / 0.22);
+  --line-strong: rgb(255 255 255 / 0.4);
+  --text: #ffffff;
+  --text-2: rgb(255 255 255 / 0.82);
+  --muted: rgb(255 255 255 / 0.65);
+  --signal: #ffffff;
+  --signal-ink: #ffffff;
+  --signal-soft: rgb(255 255 255 / 0.18);
+  --on-signal: #7d33ff;
+  background: var(--card);
+  color: var(--text);
+}
+
+:root[data-theme="dark"] .tone-ink {
+  --card: #241e33;
 }

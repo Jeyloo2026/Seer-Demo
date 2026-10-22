@@ -132,13 +132,13 @@ export function Button({ variant = "primary", size = "md", className, ...p }: Bt
       {...p}
       className={cx(
         "inline-flex items-center justify-center gap-2 rounded-full font-medium transition-colors disabled:opacity-40 disabled:pointer-events-none whitespace-nowrap select-none cursor-pointer",
-        size === "sm" && "h-8 px-3 text-[13px]",
-        size === "md" && "h-10 px-4 text-[14px]",
+        size === "sm" && "h-9 px-4 text-[13px]",
+        size === "md" && "h-11 px-5 text-[14px]",
         size === "lg" && "h-12 px-6 text-[15px]",
         variant === "primary" && "bg-signal text-on-signal hover:brightness-110",
         variant === "secondary" && "bg-signal-soft text-signal-ink hover:brightness-95",
         variant === "ghost" && "text-text-2 hover:text-text hover:bg-nested",
-        variant === "outline" && "border border-line-strong text-text hover:border-text",
+        variant === "outline" && "border border-line-strong bg-card text-text hover:border-text",
         className,
       )}
     />
@@ -148,8 +148,8 @@ export function Button({ variant = "primary", size = "md", className, ...p }: Bt
 export function ButtonLink({ to, variant = "primary", size = "md", className, children, external }: { to: string; variant?: BtnProps["variant"]; size?: BtnProps["size"]; className?: string; children: ReactNode; external?: boolean }) {
   const cls = cx(
     "inline-flex items-center justify-center gap-2 rounded-full font-medium transition-colors whitespace-nowrap",
-    size === "sm" && "h-8 px-3 text-[13px]",
-    size === "md" && "h-10 px-4 text-[14px]",
+    size === "sm" && "h-9 px-4 text-[13px]",
+    size === "md" && "h-11 px-5 text-[14px]",
     size === "lg" && "h-12 px-6 text-[15px]",
     variant === "primary" && "bg-signal text-on-signal hover:brightness-110",
     variant === "secondary" && "bg-signal-soft text-signal-ink hover:brightness-95",
@@ -170,7 +170,7 @@ export function ButtonLink({ to, variant = "primary", size = "md", className, ch
 
 export function Seg<T extends string>({ value, onChange, options, size = "md", className }: { value: T; onChange: (v: T) => void; options: { value: T; label: ReactNode }[]; size?: "sm" | "md"; className?: string }) {
   return (
-    <div role="tablist" className={cx("inline-flex rounded-full bg-nested p-1 gap-0.5", className)}>
+    <div role="tablist" className={cx("inline-flex rounded-full bg-card p-1 gap-0.5 shadow-card", className)}>
       {options.map((o) => (
         <button
           key={o.value}
@@ -179,8 +179,8 @@ export function Seg<T extends string>({ value, onChange, options, size = "md", c
           onClick={() => onChange(o.value)}
           className={cx(
             "rounded-full transition-colors whitespace-nowrap cursor-pointer",
-            size === "sm" ? "h-7 px-3 text-[12px]" : "h-8 px-3.5 text-[13px]",
-            value === o.value ? "bg-card text-text shadow-card font-medium" : "text-text-2 hover:text-text",
+            size === "sm" ? "h-8 px-3.5 text-[12.5px]" : "h-9 px-4 text-[13px]",
+            value === o.value ? "bg-text text-bg font-medium" : "text-text-2 hover:text-text",
           )}
         >
           {o.label}
@@ -196,8 +196,8 @@ export function Chip({ active, onClick, children, className }: { active?: boolea
       onClick={onClick}
       aria-pressed={active}
       className={cx(
-        "h-8 rounded-full px-3 text-[13px] border transition-colors whitespace-nowrap cursor-pointer",
-        active ? "bg-text text-bg border-text" : "border-line text-text-2 hover:border-line-strong hover:text-text",
+        "h-9 rounded-full px-4 text-[13px] border transition-colors whitespace-nowrap cursor-pointer",
+        active ? "bg-text text-bg border-text" : "border-line-strong bg-card text-text-2 hover:border-text hover:text-text",
         className,
       )}
     >
@@ -210,7 +210,7 @@ export function Badge({ children, tone = "neutral", className }: { children: Rea
   return (
     <span
       className={cx(
-        "inline-flex items-center gap-1 h-[22px] rounded-full px-2 text-[11px] font-medium whitespace-nowrap",
+        "inline-flex items-center gap-1 h-6 rounded-full px-2.5 text-[11.5px] font-medium whitespace-nowrap",
         tone === "neutral" && "bg-nested text-text-2",
         tone === "signal" && "bg-signal-soft text-signal-ink",
         tone === "solid" && "bg-signal text-on-signal",
@@ -225,21 +225,21 @@ export function Badge({ children, tone = "neutral", className }: { children: Rea
 }
 
 export function Card({ children, className, as: As = "div" }: { children: ReactNode; className?: string; as?: "div" | "section" | "article" }) {
-  return <As className={cx("rounded-2xl bg-card border border-line", className)}>{children}</As>;
+  return <As className={cx("rounded-[24px] bg-card shadow-card", className)}>{children}</As>;
 }
 
 export function Stat({ label, value, sub, className, big }: { label: ReactNode; value: ReactNode; sub?: ReactNode; className?: string; big?: boolean }) {
   return (
     <div className={cx("min-w-0", className)}>
       <div className="eyebrow mb-2">{label}</div>
-      <div className={cx("num text-text", big ? "text-[32px] leading-none" : "text-[20px] leading-tight")}>{value}</div>
+      <div className={cx("num text-text tracking-[-0.03em]", big ? "text-[36px] leading-none" : "text-[24px] leading-tight")}>{value}</div>
       {sub && <div className="mt-1.5 text-[12px] text-muted">{sub}</div>}
     </div>
   );
 }
 
 /** Horizontal probability bar. The leading outcome is the only one that gets the signal colour. */
-export function ProbBar({ p, on = false, className, h = 6 }: { p: number | null; on?: boolean; className?: string; h?: number }) {
+export function ProbBar({ p, on = false, className, h = 8 }: { p: number | null; on?: boolean; className?: string; h?: number }) {
   return (
     <div className={cx("w-full rounded-full bg-nested overflow-hidden", className)} style={{ height: h }}>
       <div

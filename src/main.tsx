@@ -13,7 +13,7 @@ const Risk = lazy(() => import("./pages/Risk"));
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <BrowserRouter>
+    <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, "")}>
       <Suspense fallback={<div className="min-h-screen bg-bg" />}>
         <Routes>
           <Route path="/" element={<Home />} />

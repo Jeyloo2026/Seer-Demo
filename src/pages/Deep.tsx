@@ -1,7 +1,8 @@
 import { useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { Shell, Container } from "../ui/Shell";
-import { AppGlyph, Arrow, Badge, Diamond, LiveTag, Seg, Skeleton, cx } from "../ui/kit";
+import { Bento, BentoHead, DeviceTile, INK, StackRows, Tile, VIOLET } from "../ui/bento";
+import { Arrow, Badge, Icon, LiveTag, Seg, Skeleton, cx } from "../ui/kit";
 import { TradeTicket } from "../ui/Trade";
 import { useLeaderboard, useLiveIds, useMarkets, type Market } from "../data/seer";
 import { chainName, marketPath, num, pct, short, statusOf, stripUnit, usd } from "../data/market";
@@ -109,79 +110,89 @@ export default function Deep() {
   return (
     <Shell app="deep" wide>
       {/* Header */}
-      <section className="border-b border-line bg-card">
-        <Container wide className="py-12 md:py-16">
-          <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-end">
-            <div>
-              <div className="mb-5 flex items-center gap-3">
-                <AppGlyph app="deep" className="h-6 w-6 text-text" />
-                <span className="text-[15px] font-medium">Deep</span>
-                <LiveTag live={!!liveAt} at={liveAt} />
+      <Bento>
+        <BentoHead app="deep" name="Deep" meta={<LiveTag live={!!liveAt} at={liveAt} className="ml-2" />} title="A whole field, priced at once." />
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-12">
+          <DeviceTile device="field" tone="violet" field={entries.map((e) => e.p).sort((a, b) => b - a)} className="md:col-span-2 xl:col-span-6 xl:row-span-2 min-h-[400px]">
+            <span className="w-fit rounded-full px-3 py-1.5 text-[12px]" style={{ background: "rgb(255 255 255 / 0.16)" }}>
+              {c.short}
+            </span>
+            <div className="mt-auto max-w-[32ch] pt-20">
+              <h2 className="text-[30px] leading-[1.05] tracking-[-0.03em] font-medium">{c.question}</h2>
+              <div className="mt-6 flex gap-8">
+                <span>
+                  <span className="block text-[40px] leading-none tracking-[-0.03em]">{entries.length || "—"}</span>
+                  <span className="mt-1 block text-[13px] text-white/75">{c.entryNoun}</span>
+                </span>
+                <span>
+                  <span className="block text-[40px] leading-none tracking-[-0.03em]">{usd(vol)}</span>
+                  <span className="mt-1 block text-[13px] text-white/75">traded</span>
+                </span>
               </div>
-              <h1 className="display text-[44px] md:text-[68px]">
-                A whole field,
-                <br />
-                <span className="text-muted">priced at once.</span>
-              </h1>
+              <p className="mt-6 text-[14px] leading-relaxed text-white/80">Forecasters, many of them AI agents, price how each entry will be judged ({c.evaluator}). The evaluators still decide.</p>
             </div>
-            <div>
-              <p className="text-[16px] leading-relaxed text-text-2">
-                Deep markets hold dozens of outcomes in a single question: grant proposals, repositories, projects. Forecasters, many of them AI agents, price
-                how human evaluators will judge each entry. Funding teams read the field to decide where to look closer.
-              </p>
-              <div className="mt-6 grid grid-cols-3 gap-4 text-[13px]">
-                {[
-                  ["1", "Many outcomes", "One market, one token per entry"],
-                  ["2", "Agent-native", "Same API for people and models"],
-                  ["3", "Humans decide", "Resolves to the evaluators' verdict"],
-                ].map(([n, k, v]) => (
-                  <div key={n} className="border-t border-line pt-3">
-                    <div className="num text-[11px] text-muted">0{n}</div>
-                    <div className="mt-1 font-medium">{k}</div>
-                    <div className="mt-0.5 text-text-2">{v}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+          </DeviceTile>
 
-          {/* Contest switcher */}
-          <div className="mt-12 grid grid-cols-[minmax(0,1fr)] gap-3 md:grid-cols-3">
-            {CONTESTS.map((x) => {
-              const es = entriesFor(x, byId);
-              const v = x.ids.reduce((a, id) => a + (byId.get(id)?.vol ?? 0), 0);
-              const done = es.length > 0 && es.every((e) => e.actual != null);
-              return (
-                <button
-                  key={x.key}
-                  onClick={() => {
+          <Tile className="xl:col-span-3" title="Contests">
+            <StackRows
+              items={CONTESTS.map((x) => {
+                const es = entriesFor(x, byId);
+                const done = es.length > 0 && es.every((e) => e.actual != null);
+                return {
+                  key: x.key,
+                  title: x.question,
+                  sub: `${es.length || "—"} ${x.entryNoun} · ${usd(x.ids.reduce((a, id) => a + (byId.get(id)?.vol ?? 0), 0))}`,
+                  value: done ? "Done" : "Open",
+                  active: ck === x.key,
+                  onClick: () => {
                     setCk(x.key);
                     setSel(null);
                     if (params.id) nav("/deep", { replace: true });
-                  }}
-                  className={cx("rounded-2xl border p-5 text-left transition-colors cursor-pointer", ck === x.key ? "border-text bg-bg" : "border-line hover:border-line-strong")}
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="eyebrow">{x.short}</span>
-                    <span className="ml-auto">{done ? <Badge tone="neutral">Resolved</Badge> : <Badge tone="signal">Open</Badge>}</span>
-                  </div>
-                  <div className="mt-3 text-[16px] font-medium leading-snug">{x.question}</div>
-                  <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[12px] text-text-2">
-                    <span>
-                      <span className="num text-text">{es.length || "—"}</span> {x.entryNoun}
-                    </span>
-                    <span>
-                      <span className="num text-text">{usd(v)}</span> traded
-                    </span>
-                    <span>{x.evaluator}</span>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </Container>
-      </section>
+                  },
+                };
+              })}
+            />
+          </Tile>
 
+          <Tile className="xl:col-span-3" title="Leading the field" to="#field">
+            <StackRows
+              items={[...entries]
+                .sort((a, b) => b.p - a.p)
+                .slice(0, 3)
+                .map((e, i) => ({ key: e.key, badge: String(i + 1).padStart(2, "0"), title: e.name, value: pct(e.p), valueSub: e.actual != null ? "resolved" : "forecast", onClick: () => setSel(e.key) }))}
+            />
+          </Tile>
+
+          <Tile className="md:col-span-2 xl:col-span-6" title="Every entry, by forecast">
+            {entries.length ? (
+              <>
+                <div className="mt-5 flex h-36 items-end gap-[3px]">
+                  {[...entries]
+                    .sort((a, b) => b.p - a.p)
+                    .map((e, i, arr) => (
+                      <button
+                        key={e.key}
+                        onClick={() => setSel(e.key)}
+                        title={`${e.name} ${pct(e.p)}`}
+                        aria-label={`${e.name} ${pct(e.p)}`}
+                        className="flex-1 rounded-t-[6px] transition-opacity hover:opacity-70 cursor-pointer"
+                        style={{ height: `${Math.max(4, (e.p / (arr[0].p || 1)) * 100)}%`, background: e.key === selected?.key ? VIOLET : i < 3 ? INK : "var(--line-strong)" }}
+                      />
+                    ))}
+                </div>
+                <div className="mt-3 flex justify-between text-[12px] text-text-2">
+                  <span>Highest forecast</span>
+                  <span>{entries.length} entries</span>
+                </div>
+              </>
+            ) : (
+              <Skeleton className="mt-5 h-36" />
+            )}
+          </Tile>
+        </div>
+      </Bento>
+
+      <span id="field" className="block scroll-mt-24" />
       <Container wide className="py-10">
         {!ready || !entries.length ? (
           <Skeleton className="h-[480px]" />
@@ -243,7 +254,7 @@ function BinaryField({ entries, sel, onSel, resolved }: { entries: Entry[]; sel?
   return (
     <div className="space-y-6">
       {/* Threshold control: the funding team's lens */}
-      <div className="rounded-2xl border border-line bg-card p-5 md:p-6">
+      <div className="rounded-[24px] bg-card shadow-card p-5 md:p-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <div className="text-[15px] font-medium">Review threshold</div>
@@ -270,56 +281,84 @@ function BinaryField({ entries, sel, onSel, resolved }: { entries: Entry[]; sel?
         </div>
       </div>
 
-      <div className="flex items-center justify-between">
-        <div className="eyebrow">{entries.length} proposals · ranked by market approval forecast</div>
-        {resolved && (
-          <label className="flex items-center gap-2 text-[13px] text-text-2 cursor-pointer">
-            <input type="checkbox" checked={reveal} onChange={(e) => setReveal(e.target.checked)} className="accent-[var(--signal)]" />
-            Show coinholder result
-          </label>
-        )}
-      </div>
+      <div className="rounded-[30px] bg-card p-3 shadow-card">
+        <div className="flex flex-wrap items-center justify-between gap-3 px-3 pt-2 pb-4">
+          <div>
+            <h3 className="text-[19px] font-medium tracking-[-0.02em]">Every proposal, ranked</h3>
+            <p className="mt-0.5 text-[13px] text-text-2">{entries.length} proposals, ordered by the market’s approval forecast</p>
+          </div>
+          {resolved && (
+            <button
+              role="switch"
+              aria-checked={reveal}
+              onClick={() => setReveal(!reveal)}
+              className="inline-flex h-11 items-center gap-3 rounded-full bg-nested pl-1.5 pr-4 text-[13px] cursor-pointer"
+            >
+              <span className={cx("flex h-8 w-14 items-center rounded-full p-1 transition-colors", reveal ? "bg-signal" : "bg-line-strong")}>
+                <span className={cx("h-6 w-6 rounded-full bg-white shadow transition-transform", reveal && "translate-x-6")} />
+              </span>
+              Coinholder result
+            </button>
+          )}
+        </div>
 
-      <div className="overflow-hidden rounded-2xl border border-line bg-card">
-        {entries.map((e, k) => {
-          const first = k > 0 && entries[k - 1].p >= t && e.p < t;
-          return (
-            <div key={e.key}>
-              {first && (
-                <div className="flex items-center gap-3 bg-signal-soft px-5 py-1.5">
-                  <Diamond size={9} />
-                  <span className="eyebrow !text-signal-ink">Review line · {t}%</span>
-                </div>
-              )}
-              <button
-                onClick={() => onSel(e.key)}
-                className={cx(
-                  "grid w-full grid-cols-[28px_minmax(0,1fr)_minmax(80px,180px)_56px] md:grid-cols-[28px_minmax(0,1fr)_220px_56px_96px] items-center gap-3 border-b border-line px-5 py-3 text-left last:border-b-0 transition-colors cursor-pointer",
-                  sel === e.key ? "bg-nested" : "hover:bg-nested/50",
+        <ol className="space-y-1.5">
+          {entries.map((e, k) => {
+            const first = k > 0 && entries[k - 1].p >= t && e.p < t;
+            const on = sel === e.key;
+            const above = e.p >= t;
+            return (
+              <li key={e.key}>
+                {first && (
+                  <div className="my-3 flex items-center gap-3 px-3" aria-label={`Review line at ${t}%`}>
+                    <span className="h-px flex-1 border-t-2 border-dashed border-signal/40" />
+                    <span className="rounded-full bg-signal-soft px-3.5 py-1.5 text-[12.5px] text-signal-ink">Review line · {t}%</span>
+                    <span className="h-px flex-1 border-t-2 border-dashed border-signal/40" />
+                  </div>
                 )}
-              >
-                <span className="num text-[12px] text-muted">{String(k + 1).padStart(2, "0")}</span>
-                <span className="truncate text-[14px]">{e.name}</span>
-                <span className="relative h-2 rounded-full bg-nested">
-                  <span className="absolute inset-y-0 left-0 rounded-full" style={{ width: `${e.p}%`, background: e.p >= t ? "var(--signal)" : "var(--line-strong)" }} />
-                  <span className="absolute -top-1 bottom-[-4px] w-px bg-text/40" style={{ left: `${t}%` }} />
-                </span>
-                <span className="num text-right text-[13px]">{pct(e.p, 0)}</span>
-                <span className="hidden md:block text-right text-[12px]">
-                  {reveal && e.actual != null ? (
-                    e.actual ? (
-                      <span className="text-signal-ink">✓ Approved</span>
-                    ) : (
-                      <span className="text-muted">Not approved</span>
-                    )
-                  ) : (
-                    <span className="text-muted">—</span>
+                <button
+                  onClick={() => onSel(e.key)}
+                  aria-pressed={on}
+                  className={cx(
+                    "grid w-full grid-cols-[40px_minmax(0,1fr)_52px] md:grid-cols-[40px_minmax(0,1fr)_200px_56px_128px] items-center gap-4 rounded-[20px] px-3 py-2.5 text-left transition-colors cursor-pointer",
+                    on ? "tone-ink" : "hover:bg-nested",
                   )}
-                </span>
-              </button>
-            </div>
-          );
-        })}
+                >
+                  <span
+                    className={cx(
+                      "num grid h-10 w-10 place-items-center rounded-full text-[13px]",
+                      on ? "bg-signal text-white" : k < 3 ? "bg-text text-bg" : "bg-nested text-text-2",
+                    )}
+                  >
+                    {k + 1}
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block truncate text-[15px]">{e.name}</span>
+                    <span className="mt-0.5 block text-[12px] text-text-2 md:hidden">{above ? "Above the review line" : "Below the review line"}</span>
+                  </span>
+                  <span className="relative hidden h-3 rounded-full bg-nested md:block">
+                    <span className="absolute inset-y-0 left-0 rounded-full" style={{ width: `${e.p}%`, background: above ? "var(--signal)" : "var(--line-strong)" }} />
+                    <span className="absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rotate-45 rounded-[3px] border-2 border-[var(--card)] bg-text" style={{ left: `${t}%` }} />
+                  </span>
+                  <span className="num text-right text-[16px] tracking-[-0.02em]">{pct(e.p, 0)}</span>
+                  <span className="hidden justify-end md:flex">
+                    {reveal && e.actual != null ? (
+                      e.actual ? (
+                        <span className="inline-flex h-8 items-center gap-1.5 rounded-full bg-signal px-3 text-[12px] text-white">
+                          <Icon name="check" className="h-3.5 w-3.5" /> Approved
+                        </span>
+                      ) : (
+                        <span className="inline-flex h-8 items-center rounded-full bg-nested px-3 text-[12px] text-text-2">Not approved</span>
+                      )
+                    ) : (
+                      <span className="inline-flex h-8 items-center rounded-full border border-dashed border-line-strong px-3 text-[12px] text-muted">{resolved ? "Hidden" : "Pending"}</span>
+                    )}
+                  </span>
+                </button>
+              </li>
+            );
+          })}
+        </ol>
       </div>
     </div>
   );
@@ -327,7 +366,7 @@ function BinaryField({ entries, sel, onSel, resolved }: { entries: Entry[]; sel?
 
 function Mini({ k, v, s, on }: { k: string; v: string; s: string; on?: boolean }) {
   return (
-    <div className={cx("rounded-xl border p-4", on ? "border-signal bg-signal-soft" : "border-line")}>
+    <div className={cx("rounded-[22px] p-4", on ? "tone-violet" : "bg-nested")}>
       <div className="eyebrow mb-1.5">{k}</div>
       <div className={cx("num text-[24px] leading-none", on && "text-signal-ink")}>{v}</div>
       <div className="mt-1.5 text-[12px] text-text-2">{s}</div>
@@ -372,7 +411,7 @@ function ShareField({ entries, sel, onSel, resolved, noun }: { entries: Entry[];
         )}
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-line bg-card p-1.5">
+      <div className="overflow-hidden rounded-[24px] bg-card shadow-card p-1.5">
         <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ aspectRatio: `${W}/${H}` }}>
           {rects.map((r, i) => {
             const e = byKey.get(r.key)!;
@@ -414,7 +453,7 @@ function ShareField({ entries, sel, onSel, resolved, noun }: { entries: Entry[];
       </div>
 
       <div className="grid gap-4 md:grid-cols-[1fr_1fr]">
-        <div className="rounded-2xl border border-line bg-card p-5">
+        <div className="rounded-[24px] bg-card shadow-card p-5">
           <div className="text-[15px] font-medium">Concentration</div>
           <p className="mt-1 text-[13px] text-text-2">
             <span className="num text-text">{nAt(0.5)}</span> of {entries.length} {noun} hold half of the {mode === "forecast" ? "forecast" : "final"} weight;{" "}
@@ -422,7 +461,7 @@ function ShareField({ entries, sel, onSel, resolved, noun }: { entries: Entry[];
           </p>
           <Curve curve={curve} />
         </div>
-        <div className="rounded-2xl border border-line bg-card p-5">
+        <div className="rounded-[24px] bg-card shadow-card p-5">
           <div className="text-[15px] font-medium">{resolved ? "Forecast vs. result" : "How this resolves"}</div>
           {resolved ? (
             <>
@@ -492,7 +531,7 @@ function EntryPanel({ e, c, rank, total }: { e: Entry; c: Contest; rank: number;
   const resolved = statusOf(m) === "Resolved";
   return (
     <div className="space-y-4">
-      <div className="rounded-2xl border border-line bg-card p-5">
+      <div className="rounded-[24px] bg-card shadow-card p-5">
         <div className="eyebrow mb-2">
           #{rank} of {total}
         </div>
@@ -519,7 +558,7 @@ function EntryPanel({ e, c, rank, total }: { e: Entry; c: Contest; rank: number;
       </div>
       {!resolved && <TradeTicket market={m} initial={e.index} compact />}
       {resolved && (
-        <div className="rounded-2xl border border-line bg-card p-5 text-[13px] leading-relaxed text-text-2">
+        <div className="rounded-[24px] bg-card shadow-card p-5 text-[13px] leading-relaxed text-text-2">
           This market has resolved. Winning tokens redeem for sDAI on the{" "}
           <Link to={marketPath(m)} className="text-signal-ink hover:underline">
             market page
@@ -548,7 +587,7 @@ function AgentPanel({ c, entries, e }: { c: Contest; entries: Entry[]; e: Entry 
   };
   return (
     <div className="space-y-4">
-      <div className="rounded-2xl border border-line bg-card p-5">
+      <div className="rounded-[24px] bg-card shadow-card p-5">
         <div className="mb-2 flex items-center gap-2">
           <span className="text-[15px] font-medium">Built for agents</span>
           <Badge tone="signal">Open API</Badge>
@@ -557,14 +596,14 @@ function AgentPanel({ c, entries, e }: { c: Contest; entries: Entry[]; e: Entry 
           Agents read the same field as reviewers, as structured data, and trade through the same router. No scraping, no special access.
         </p>
       </div>
-      <div className="overflow-hidden rounded-2xl border border-line bg-card">
+      <div className="overflow-hidden rounded-[30px] bg-card p-2 shadow-card">
         <div className="flex items-center gap-2 border-b border-line px-4 py-2.5">
           <span className="eyebrow">field.json</span>
         </div>
         <pre className="num max-h-[300px] overflow-auto p-4 text-[11.5px] leading-[1.6] text-text-2 scroll-thin">{JSON.stringify(spec, null, 2)}</pre>
       </div>
-      <div className="overflow-hidden rounded-2xl border border-line bg-card">
-        <div className="border-b border-line px-4 py-2.5 eyebrow">Read · then trade</div>
+      <div className="overflow-hidden rounded-[30px] bg-card p-2 shadow-card">
+        <div className="px-4 pt-3 pb-2 eyebrow">Read · then trade</div>
         <pre className="num overflow-x-auto p-4 text-[11.5px] leading-[1.7] text-text-2 scroll-thin">
           {`curl -X POST https://app.seer.pm/.netlify/functions/get-market \\
   -d '{"chainId":${m.chainId},"id":"${short(m.id, 6)}"}'
@@ -592,8 +631,8 @@ function Forecasters() {
         </div>
         <p className="max-w-sm text-[13px] text-text-2">Realised P/L across every Deep Funding market, from Seer's leaderboard. Wallets may be people, agents, or both.</p>
       </div>
-      <div className="overflow-hidden rounded-2xl border border-line bg-card">
-        <div className="hidden md:grid grid-cols-[48px_1fr_120px_120px_100px_90px_120px] gap-4 border-b border-line px-5 py-3 eyebrow">
+      <div className="overflow-hidden rounded-[30px] bg-card p-2 shadow-card">
+        <div className="hidden md:grid grid-cols-[48px_1fr_120px_120px_100px_90px_120px] gap-4 px-4 pt-3 pb-2 eyebrow">
           <span>#</span>
           <span>Wallet</span>
           <span className="text-right">P/L</span>
@@ -604,7 +643,7 @@ function Forecasters() {
         </div>
         {!rows && <Skeleton className="m-5 h-40" />}
         {rows?.slice(0, 10).map((r, i) => (
-          <div key={r.address} className="grid grid-cols-[48px_1fr_auto] md:grid-cols-[48px_1fr_120px_120px_100px_90px_120px] items-center gap-4 border-b border-line px-5 py-3 text-[13px] last:border-b-0">
+          <div key={r.address} className="grid grid-cols-[48px_1fr_auto] md:grid-cols-[48px_1fr_120px_120px_100px_90px_120px] items-center gap-4 rounded-[18px] px-4 py-3 text-[13px] transition-colors hover:bg-nested">
             <span className="num text-muted">{String(r.rank).padStart(2, "0")}</span>
             <span className="num truncate">{r.username ? `@${r.username}` : short(r.address, 5)}</span>
             <span className={cx("num text-right", i === 0 ? "text-signal-ink" : "text-text")}>{r.pnl >= 0 ? "+" : ""}{usd(r.pnl)}</span>

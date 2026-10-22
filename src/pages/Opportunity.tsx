@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { Shell, Container } from "../ui/Shell";
-import { AppGlyph, Arrow, Badge, Button, Icon, LiveTag, Seg, Skeleton, cx } from "../ui/kit";
+import { Bento, BentoHead, DeviceTile, INK, StackRows, Tile, VIOLET } from "../ui/bento";
+import { Arrow, Badge, Button, Icon, LiveTag, Seg, Skeleton, cx } from "../ui/kit";
 import { LineChart } from "../ui/charts";
 import { TradeTicket } from "../ui/Trade";
 import { useChart, useLeaderboard, useLiveIds, useMarkets, type Market } from "../data/seer";
@@ -55,68 +56,93 @@ export default function Opportunity() {
 
   return (
     <Shell app="opportunity" wide>
-      <section className="border-b border-line bg-card">
-        <Container wide className="py-12 md:py-16">
-          <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-end">
-            <div>
-              <div className="mb-5 flex items-center gap-3">
-                <AppGlyph app="opportunity" className="h-6 w-6 text-text" />
-                <span className="text-[15px] font-medium">Opportunity Markets</span>
-                <LiveTag live={!!liveAt} at={liveAt} />
+      <Bento>
+        <BentoHead
+          app="opportunity"
+          name="Opportunity Markets"
+          meta={<LiveTag live={!!liveAt} at={liveAt} className="ml-2" />}
+          title="Every submission is an outcome."
+          controls={
+            <>
+              <SubmitButton />
+              <a href="#how" className="inline-flex h-12 items-center rounded-full border border-line-strong px-5 text-[15px] font-medium hover:border-text">
+                How it works
+              </a>
+            </>
+          }
+        />
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-12">
+          <DeviceTile device="portrait" tone="violet" className="md:col-span-2 xl:col-span-6 xl:row-span-2 min-h-[420px]">
+            <span className="w-fit rounded-full px-3 py-1.5 text-[12px]" style={{ background: "rgb(255 255 255 / 0.16)" }}>
+              {c.label}
+            </span>
+            <div className="mt-auto max-w-[26ch] pt-20 md:max-w-[52%]">
+              <h2 className="text-[28px] leading-[1.08] tracking-[-0.03em] font-medium">{m?.name ?? "—"}</h2>
+              <div className="mt-6 flex gap-8">
+                <span>
+                  <span className="block text-[40px] leading-none tracking-[-0.03em]">{m ? m.outcomes.length - 1 : "—"}</span>
+                  <span className="mt-1 block text-[13px] text-white/80">{c.noun}</span>
+                </span>
+                <span>
+                  <span className="block text-[40px] leading-none tracking-[-0.03em]">{usd(m?.vol ?? 0)}</span>
+                  <span className="mt-1 block text-[13px] text-white/80">traded</span>
+                </span>
               </div>
-              <h1 className="display text-[44px] md:text-[68px]">
-                Every submission
-                <br />
-                <span className="text-muted">is an outcome.</span>
-              </h1>
+              <p className="mt-6 text-[14px] leading-relaxed text-white/85">Traders forecast which entries {c.reviewer} will select. The selection stays with the reviewers; the market only adds a signal.</p>
             </div>
-            <div>
-              <p className="text-[16px] leading-relaxed text-text-2">
-                Entries to an open call become outcomes of one market. Traders forecast which ones the reviewers will select, and reviewers get a live read on
-                the field before they decide. The selection stays with the reviewers; the market only adds a signal.
-              </p>
-              <div className="mt-6 flex flex-wrap gap-3">
-                <SubmitButton />
-                <a href="#how" className="inline-flex h-10 items-center rounded-full border border-line-strong px-4 text-[14px] hover:border-text">
-                  How it works
-                </a>
-              </div>
-            </div>
-          </div>
+          </DeviceTile>
 
-          <div className="mt-12 grid grid-cols-[minmax(0,1fr)] gap-3 md:grid-cols-3">
-            {CONTESTS.map((x) => {
-              const mk = byId.get(x.id);
-              const st = mk ? statusOf(mk) : null;
-              const top = mk ? ranked(mk) : [];
-              const won = top.filter((o) => o.won);
-              return (
-                <button
-                  key={x.id}
-                  onClick={() => nav(`/opportunity/${x.id}`)}
-                  className={cx("rounded-2xl border p-5 text-left transition-colors cursor-pointer", c.id === x.id ? "border-text bg-bg" : "border-line hover:border-line-strong")}
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="eyebrow">{x.label}</span>
-                    <span className="ml-auto">{st === "Resolved" ? <Badge tone="neutral">Selected</Badge> : <Badge tone="signal">Open</Badge>}</span>
-                  </div>
-                  <div className="mt-3 line-clamp-2 text-[15px] font-medium leading-snug">{mk?.name ?? "—"}</div>
-                  <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[12px] text-text-2">
-                    <span>
-                      <span className="num text-text">{mk ? mk.outcomes.length - 1 : "—"}</span> {x.noun}
-                    </span>
-                    <span>
-                      <span className="num text-text">{usd(mk?.vol ?? 0)}</span> traded
-                    </span>
-                    {won.length > 0 && <span className="truncate text-signal-ink">✓ {won.map((w) => w.name).join(", ")}</span>}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </Container>
-      </section>
+          <Tile className="xl:col-span-3" title="Open calls">
+            <StackRows
+              items={CONTESTS.map((x) => {
+                const mk = byId.get(x.id);
+                const st = mk ? statusOf(mk) : null;
+                return {
+                  key: x.id,
+                  title: x.label,
+                  sub: `${mk ? mk.outcomes.length - 1 : "—"} ${x.noun} · ${usd(mk?.vol ?? 0)}`,
+                  value: st === "Resolved" ? "Selected" : "Open",
+                  active: c.id === x.id,
+                  onClick: () => nav(`/opportunity/${x.id}`),
+                };
+              })}
+            />
+          </Tile>
 
+          <Tile className="xl:col-span-3" title="Market favourites" to="#contest">
+            <StackRows
+              items={(m ? ranked(m) : []).slice(0, 3).map((o, i) => ({
+                key: o.name,
+                badge: String(i + 1).padStart(2, "0"),
+                title: o.name,
+                sub: o.won ? "Selected by reviewers" : "selection forecast",
+                value: pct(o.p),
+                onClick: () => document.getElementById("contest")?.scrollIntoView({ behavior: "smooth" }),
+              }))}
+            />
+          </Tile>
+
+          <Tile className="md:col-span-2 xl:col-span-6" title="How a call runs">
+            <ol className="mt-5 grid gap-3 sm:grid-cols-3">
+              {[
+                { t: "Submit", d: "Each entry becomes an outcome token." },
+                { t: "Price", d: "Traders forecast which entries get picked." },
+                { t: "Choose", d: "Reviewers decide, with the field in view." },
+              ].map((s, i) => (
+                <li key={s.t} className="rounded-[22px] p-4" style={{ background: i === 2 ? INK : "var(--nested)", color: i === 2 ? "#fff" : undefined }}>
+                  <span className="grid h-9 w-9 place-items-center rounded-full text-[13px]" style={{ background: i === 2 ? VIOLET : "var(--card)" }}>
+                    {i + 1}
+                  </span>
+                  <span className="mt-6 block text-[17px] font-medium">{s.t}</span>
+                  <span className={cx("mt-1 block text-[13px]", i === 2 ? "text-white/70" : "text-text-2")}>{s.d}</span>
+                </li>
+              ))}
+            </ol>
+          </Tile>
+        </div>
+      </Bento>
+
+      <span id="contest" className="block scroll-mt-24" />
       <Container wide className="py-10">{!ready || !m ? <Skeleton className="h-[600px]" /> : <Contest m={m} c={c} />}</Container>
 
       <Container wide>
@@ -171,7 +197,7 @@ function OpenContest({ m, c }: { m: Market; c: (typeof CONTESTS)[0] }) {
             <button
               key={o.i}
               onClick={() => setSel(o.i)}
-              className={cx("relative overflow-hidden rounded-2xl border p-6 text-left transition-colors cursor-pointer", k === 0 ? "border-signal bg-signal text-on-signal" : "border-line bg-card hover:border-line-strong")}
+              className={cx("relative overflow-hidden rounded-[30px] p-6 text-left shadow-card transition-transform hover:-translate-y-0.5 cursor-pointer", k === 0 ? "tone-violet" : "bg-card")}
             >
               <div className={cx("eyebrow", k === 0 && "!text-white/70")}>Market rank {k + 1}</div>
               <div className="mt-8 break-words text-[30px] md:text-[34px] font-medium leading-none tracking-[-0.03em]">{o.name}</div>
@@ -184,7 +210,7 @@ function OpenContest({ m, c }: { m: Market; c: (typeof CONTESTS)[0] }) {
         </div>
 
         {/* History */}
-        <div className="rounded-2xl border border-line bg-card p-5">
+        <div className="rounded-[24px] bg-card shadow-card p-5">
           <div className="mb-3 flex items-center justify-between">
             <span className="text-[15px] font-medium">How the field has moved</span>
             <span className="eyebrow">Top 8 · pool prices</span>
@@ -199,7 +225,7 @@ function OpenContest({ m, c }: { m: Market; c: (typeof CONTESTS)[0] }) {
         {/* Gallery */}
         <div>
           <div className="mb-4 flex flex-wrap items-center gap-3">
-            <div className="flex h-10 flex-1 min-w-[220px] items-center gap-2 rounded-full border border-line bg-card px-4 focus-within:border-signal">
+            <div className="flex h-10 flex-1 min-w-[220px] items-center gap-2 rounded-full border border-transparent bg-card px-4 shadow-card focus-within:border-signal">
               <Icon name="search" className="h-4 w-4 text-muted" />
               <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={`Search ${outs.length} ${c.noun}`} className="h-full flex-1 bg-transparent text-[14px] outline-none" />
             </div>
@@ -257,7 +283,7 @@ function OpenContest({ m, c }: { m: Market; c: (typeof CONTESTS)[0] }) {
           ]}
         />
         {mode === "review" ? (
-          <div className="rounded-2xl border border-line bg-card p-5">
+          <div className="rounded-[24px] bg-card shadow-card p-5">
             <div className="text-[15px] font-medium">Your shortlist</div>
             <p className="mt-1 text-[13px] leading-relaxed text-text-2">Bookmark entries as you review. The market's view sits next to yours; it never replaces it.</p>
             {short_.length === 0 ? (
@@ -359,7 +385,7 @@ function ResolvedContest({ m, c }: { m: Market; c: (typeof CONTESTS)[0] }) {
             </div>
           )}
         </div>
-        <div className="rounded-3xl border border-line bg-card p-8">
+        <div className="rounded-[30px] bg-card shadow-card p-8">
           <div className="text-[18px] font-medium tracking-tight">{story && chosenNames.includes(story.fav.name) ? "The market saw it coming." : "Reviewers went their own way."}</div>
           <p className="mt-3 text-[14px] leading-relaxed text-text-2">
             {story && chosenNames.includes(story.fav.name)
@@ -383,7 +409,7 @@ function ResolvedContest({ m, c }: { m: Market; c: (typeof CONTESTS)[0] }) {
         </div>
       </div>
 
-      <div className="rounded-2xl border border-line bg-card p-5">
+      <div className="rounded-[24px] bg-card shadow-card p-5">
         <div className="mb-3 flex items-center justify-between">
           <span className="text-[15px] font-medium">Share of the field until the decision</span>
           <span className="eyebrow">Normalised pool prices</span>
@@ -403,7 +429,7 @@ function ResolvedContest({ m, c }: { m: Market; c: (typeof CONTESTS)[0] }) {
 
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
         {[...outs].sort((a, b) => (story ? story.rank(a.name) - story.rank(b.name) : 0)).map((o) => (
-          <div key={o.i} className={cx("rounded-xl border p-4", o.won ? "border-signal bg-signal-soft" : "border-line bg-card")}>
+          <div key={o.i} className={cx("rounded-[22px] p-4", o.won ? "tone-violet" : "bg-nested")}>
             <div className="flex items-center justify-between">
               <span className="num text-[11px] text-muted">{story ? `#${story.rank(o.name)}` : ""}</span>
               {o.won && <Badge tone="solid">Selected</Badge>}
@@ -432,16 +458,16 @@ function How() {
         A forecast for reviewers,
         <span className="text-muted"> not a vote that replaces them.</span>
       </h2>
-      <div className="mt-12 grid gap-px overflow-hidden rounded-2xl border border-line bg-line md:grid-cols-4">
+      <div className="mt-12 grid gap-3 md:grid-cols-4">
         {steps.map(([k, v], i) => (
-          <div key={k} className="bg-card p-6">
-            <div className="num text-[11px] text-muted">0{i + 1}</div>
-            <div className="mt-3 text-[18px] font-medium tracking-tight">{k}</div>
+          <div key={k} className={cx("flex min-h-[220px] flex-col rounded-[28px] p-6 shadow-card", i === 0 ? "tone-ink" : i === 3 ? "tone-violet" : "bg-card")}>
+            <span className="grid h-10 w-10 place-items-center rounded-full bg-nested text-[13px]">{i + 1}</span>
+            <div className="mt-auto pt-8 text-[20px] font-medium tracking-tight">{k}</div>
             <p className="mt-2 text-[13.5px] leading-relaxed text-text-2">{v}</p>
           </div>
         ))}
       </div>
-      <div className="mt-4 flex flex-wrap items-center gap-4 rounded-2xl border border-dashed border-line-strong p-5">
+      <div className="mt-4 flex flex-wrap items-center gap-4 rounded-[28px] p-5" style={{ background: "#E0E2F5", color: "#14121E" }}>
         <Badge tone="signal">Next on Opportunity</Badge>
         <span className="text-[14px]">Seer's six-interfaces design contest. Each eligible entry becomes an outcome once submissions close on 23 October.</span>
       </div>
@@ -462,7 +488,7 @@ function Traders() {
       </div>
       <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
         {rows.slice(0, 5).map((r, i) => (
-          <div key={r.address} className={cx("rounded-2xl border p-5", i === 0 ? "border-signal" : "border-line bg-card")}>
+          <div key={r.address} className={cx("rounded-[26px] p-5 shadow-card", i === 0 ? "tone-ink" : "bg-card")}>
             <div className="num text-[11px] text-muted">#{r.rank}</div>
             <div className="num mt-3 truncate text-[14px]">{r.username ? `@${r.username}` : short(r.address, 5)}</div>
             <div className={cx("num mt-3 text-[22px] leading-none", i === 0 && "text-signal-ink")}>
@@ -480,16 +506,18 @@ function Traders() {
   );
 }
 
-function SubmitButton() {
+function SubmitButton({ onDark = false }: { onDark?: boolean }) {
   const [open, setOpen] = useState(false);
   const [done, setDone] = useState(false);
   const [name, setName] = useState("");
   return (
     <>
-      <Button onClick={() => setOpen(true)}>Submit an entry</Button>
+      <Button size={onDark ? "lg" : "md"} className={onDark ? "!bg-white !text-signal hover:!brightness-95" : undefined} onClick={() => setOpen(true)}>
+        Submit an entry
+      </Button>
       {open && (
         <div className="fixed inset-0 z-50 grid place-items-center bg-ink/40 p-4 backdrop-blur-sm" onMouseDown={() => setOpen(false)}>
-          <div className="w-full max-w-md rounded-2xl border border-line bg-card p-6 shadow-2xl rise" onMouseDown={(e) => e.stopPropagation()}>
+          <div className="w-full max-w-md rounded-[24px] bg-card shadow-card p-6 shadow-2xl rise" onMouseDown={(e) => e.stopPropagation()}>
             {done ? (
               <>
                 <div className="eyebrow mb-3">Simulated</div>
@@ -520,11 +548,11 @@ function SubmitButton() {
                 <label className="mt-5 block text-[13px] text-text-2" htmlFor="sub-name">
                   Name
                 </label>
-                <input id="sub-name" value={name} onChange={(e) => setName(e.target.value)} className="mt-1.5 h-11 w-full rounded-xl border border-line-strong bg-bg px-3 text-[15px] outline-none focus:border-signal" placeholder="e.g. Foreguild" />
+                <input id="sub-name" value={name} onChange={(e) => setName(e.target.value)} className="mt-1.5 h-11 w-full rounded-[18px] border border-transparent bg-nested px-4 text-[15px] outline-none focus:border-signal" placeholder="e.g. Foreguild" />
                 <label className="mt-4 block text-[13px] text-text-2" htmlFor="sub-why">
                   Rationale <span className="text-muted">(optional)</span>
                 </label>
-                <textarea id="sub-why" rows={3} className="mt-1.5 w-full rounded-xl border border-line-strong bg-bg p-3 text-[14px] outline-none focus:border-signal" />
+                <textarea id="sub-why" rows={3} className="mt-1.5 w-full rounded-[18px] border border-transparent bg-nested p-4 text-[14px] outline-none focus:border-signal" />
                 <div className="mt-5 flex gap-2">
                   <Button type="submit" className="flex-1" disabled={!name.trim()}>
                     Submit

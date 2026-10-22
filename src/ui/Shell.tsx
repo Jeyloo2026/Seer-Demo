@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { APPS, AppGlyph, Button, Icon, Kbd, Wordmark, cx, type AppKey } from "./kit";
+import { GiantWordmark } from "./brand";
 import { useMarkets } from "../data/seer";
 import { chainName, kindOf, leader, marketPath, pct, usd } from "../data/market";
 
@@ -54,8 +55,8 @@ export function Shell({ app, children, wide = false }: { app: AppKey; children: 
 
   return (
     <div className="min-h-screen flex flex-col">
-      <header className="sticky top-0 z-40 border-b border-line bg-bg/85 backdrop-blur-md">
-        <div className={cx("mx-auto flex h-16 items-center gap-3 px-4 md:px-6", wide ? "max-w-[1600px]" : "max-w-[1360px]")}>
+      <header className="sticky top-0 z-40 px-3 pt-3 md:px-6">
+        <div className={cx("mx-auto flex h-16 items-center gap-3 rounded-full bg-card/90 pl-5 pr-2.5 shadow-card backdrop-blur-md", wide ? "max-w-[1552px]" : "max-w-[1312px]")}>
           <Link to="/" className="flex items-center gap-2 shrink-0 text-text" aria-label="Seer home">
             <Wordmark className="h-[22px] w-auto" />
           </Link>
@@ -75,7 +76,7 @@ export function Shell({ app, children, wide = false }: { app: AppKey; children: 
                 end={a.path === "/"}
                 className={({ isActive }) =>
                   cx(
-                    "h-8 px-3 rounded-full text-[13px] inline-flex items-center gap-1.5 transition-colors",
+                    "h-10 px-4 rounded-full text-[14px] inline-flex items-center gap-1.5 transition-colors",
                     isActive || a.key === app ? "bg-text text-bg" : "text-text-2 hover:text-text hover:bg-nested",
                   )
                 }
@@ -88,28 +89,28 @@ export function Shell({ app, children, wide = false }: { app: AppKey; children: 
           <div className="ml-auto flex items-center gap-1.5">
             <button
               onClick={() => setPalette(true)}
-              className="hidden md:inline-flex h-9 w-56 items-center gap-2 rounded-full border border-line bg-card px-3 text-[13px] text-muted hover:border-line-strong cursor-pointer"
+              className="hidden md:inline-flex h-11 w-60 items-center gap-2 rounded-full bg-nested px-4 text-[14px] text-text-2 hover:bg-line cursor-pointer"
             >
               <Icon name="search" />
               <span className="flex-1 text-left">Search markets</span>
               <Kbd>⌘K</Kbd>
             </button>
-            <button onClick={() => setPalette(true)} className="md:hidden h-9 w-9 grid place-items-center rounded-full text-text-2 hover:bg-nested" aria-label="Search">
+            <button onClick={() => setPalette(true)} className="md:hidden h-11 w-11 grid place-items-center rounded-full border border-line-strong text-text hover:bg-nested" aria-label="Search">
               <Icon name="search" />
             </button>
             <button
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              className="h-9 w-9 grid place-items-center rounded-full text-text-2 hover:text-text hover:bg-nested cursor-pointer"
+              className="h-11 w-11 grid place-items-center rounded-full border border-line-strong text-text hover:bg-nested cursor-pointer"
               aria-label="Toggle theme"
             >
               <Icon name={theme === "dark" ? "sun" : "moon"} />
             </button>
             <span className="hidden sm:block">
-              <Button size="sm" className="!h-9" onClick={() => setWallet(true)}>
+              <Button size="md" onClick={() => setWallet(true)}>
                 Connect
               </Button>
             </span>
-            <button onClick={() => setMenu((m) => !m)} className="lg:hidden h-9 w-9 grid place-items-center rounded-full text-text-2 hover:bg-nested" aria-label="Menu" aria-expanded={menu}>
+            <button onClick={() => setMenu((m) => !m)} className="lg:hidden h-11 w-11 grid place-items-center rounded-full border border-line-strong text-text hover:bg-nested" aria-label="Menu" aria-expanded={menu}>
               <svg viewBox="0 0 16 16" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.5">
                 {menu ? <path d="M4 4l8 8M12 4l-8 8" /> : <path d="M2.5 5h11M2.5 11h11" />}
               </svg>
@@ -117,14 +118,14 @@ export function Shell({ app, children, wide = false }: { app: AppKey; children: 
           </div>
         </div>
         {menu && (
-          <div className="lg:hidden border-t border-line bg-bg">
-            <div className="mx-auto max-w-[1360px] grid grid-cols-2 gap-2 p-4">
+          <div className="lg:hidden mx-auto mt-2 max-w-[1312px] rounded-[28px] bg-card p-3 shadow-card">
+            <div className="grid grid-cols-2 gap-2">
               {APPS.map((a) => (
-                <Link key={a.key} to={a.path} className={cx("flex items-center gap-3 rounded-xl border p-3", a.key === app ? "border-signal bg-signal-soft" : "border-line bg-card")}>
-                  <AppGlyph app={a.key} className="h-6 w-6 text-text" />
+                <Link key={a.key} to={a.path} className={cx("flex items-center gap-3 rounded-[20px] p-3", a.key === app ? "bg-text text-bg" : "bg-nested")}>
+                  <AppGlyph app={a.key} className="h-6 w-6" />
                   <div className="min-w-0">
                     <div className="text-[14px] font-medium">{a.key === "home" ? "Protocol" : a.name}</div>
-                    <div className="text-[11px] text-muted truncate">{a.line}</div>
+                    <div className="text-[11px] opacity-60 truncate">{a.line}</div>
                   </div>
                 </Link>
               ))}
@@ -193,7 +194,7 @@ function Palette({ onClose, onTheme }: { onClose: () => void; onTheme: () => voi
 
   return (
     <div className="fixed inset-0 z-50 bg-ink/40 backdrop-blur-sm p-4 pt-[12vh]" onMouseDown={onClose}>
-      <div className="mx-auto max-w-2xl overflow-hidden rounded-2xl border border-line bg-card shadow-2xl rise" onMouseDown={(e) => e.stopPropagation()}>
+      <div className="mx-auto max-w-2xl overflow-hidden rounded-[24px] bg-card shadow-card shadow-2xl rise" onMouseDown={(e) => e.stopPropagation()}>
         <div className="flex items-center gap-3 border-b border-line px-4">
           <Icon name="search" className="h-4 w-4 text-muted" />
           <input
@@ -261,7 +262,7 @@ function Palette({ onClose, onTheme }: { onClose: () => void; onTheme: () => voi
 function WalletNote({ onClose }: { onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-ink/40 backdrop-blur-sm p-4" onMouseDown={onClose}>
-      <div className="w-full max-w-sm rounded-2xl border border-line bg-card p-6 shadow-2xl rise" onMouseDown={(e) => e.stopPropagation()}>
+      <div className="w-full max-w-sm rounded-[24px] bg-card shadow-card p-6 shadow-2xl rise" onMouseDown={(e) => e.stopPropagation()}>
         <div className="eyebrow mb-3">Design demo</div>
         <h3 className="text-[20px] font-medium tracking-tight">Wallets are simulated here</h3>
         <p className="mt-2 text-[14px] leading-relaxed text-text-2">
@@ -289,36 +290,52 @@ function WalletNote({ onClose }: { onClose: () => void }) {
 
 function Footer() {
   return (
-    <footer className="mt-24 border-t border-line">
-      <div className="mx-auto max-w-[1360px] px-4 md:px-6 py-14">
-        <div className="grid gap-10 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
-          <div>
-            <Wordmark className="h-7 w-auto text-text" />
-            <p className="mt-4 max-w-xs text-[13px] leading-relaxed text-text-2">Decision infrastructure. Markets for prediction, governance and coordination, on one protocol.</p>
+    <footer className="mt-20 px-3 pb-3 md:px-6 md:pb-6">
+      <div className="relative mx-auto max-w-[1552px] overflow-hidden rounded-[36px] text-white" style={{ background: "#14121E" }}>
+        <div className="px-6 pt-12 md:px-12 md:pt-14">
+          <div className="grid gap-10 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
+            <div>
+              <Wordmark className="h-7 w-auto text-white" />
+              <p className="mt-4 max-w-xs text-[14px] leading-relaxed text-white/65">Decision infrastructure. Markets for prediction, governance and coordination, on one protocol.</p>
+              <div className="mt-6 flex gap-2">
+                {[
+                  ["X", "https://x.com/seer_pm"],
+                  ["Discord", "https://discord.com/invite/rBEB4MYQwV"],
+                  ["GitHub", "https://github.com/seer-pm"],
+                ].map(([l, h]) => (
+                  <a key={l} href={h} target="_blank" rel="noreferrer" className="inline-flex h-11 items-center rounded-full border border-white/20 px-4 text-[13px] hover:bg-white/10">
+                    {l}
+                  </a>
+                ))}
+              </div>
+            </div>
+            <FooterCol title="Interfaces" links={APPS.map((a) => ({ label: a.key === "home" ? "Protocol" : a.name, to: a.path }))} />
+            <FooterCol
+              title="Protocol"
+              links={[
+                { label: "Documentation", href: "https://seer-3.gitbook.io/seer-documentation" },
+                { label: "GitHub", href: "https://github.com/seer-pm" },
+                { label: "Reality.eth oracle", href: "https://reality.eth.limo" },
+                { label: "Kleros court", href: "https://kleros.io" },
+              ]}
+            />
+            <FooterCol
+              title="Community"
+              links={[
+                { label: "X / Twitter", href: "https://x.com/seer_pm" },
+                { label: "Discord", href: "https://discord.com/invite/rBEB4MYQwV" },
+                { label: "Telegram", href: "https://t.me/Seerpredictionmarket" },
+                { label: "Blog", href: "https://seer-pm.medium.com" },
+              ]}
+            />
           </div>
-          <FooterCol title="Interfaces" links={APPS.map((a) => ({ label: a.key === "home" ? "Protocol" : a.name, to: a.path }))} />
-          <FooterCol
-            title="Protocol"
-            links={[
-              { label: "Documentation", href: "https://seer-3.gitbook.io/seer-documentation" },
-              { label: "GitHub", href: "https://github.com/seer-pm" },
-              { label: "Reality.eth oracle", href: "https://reality.eth.limo" },
-              { label: "Kleros court", href: "https://kleros.io" },
-            ]}
-          />
-          <FooterCol
-            title="Community"
-            links={[
-              { label: "X / Twitter", href: "https://x.com/seer_pm" },
-              { label: "Discord", href: "https://discord.com/invite/rBEB4MYQwV" },
-              { label: "Telegram", href: "https://t.me/Seerpredictionmarket" },
-              { label: "Blog", href: "https://seer-pm.medium.com" },
-            ]}
-          />
+          <div className="mt-12 flex flex-wrap items-center justify-between gap-4 border-t border-white/10 pt-6 text-[12px] text-white/50">
+            <span>Design concept on the Electric Foundation identity. Market data is live from the public Seer API; trading actions are simulated.</span>
+            <span>Gnosis, Ethereum, Optimism and Base</span>
+          </div>
         </div>
-        <div className="mt-14 flex flex-wrap items-center justify-between gap-4 border-t border-line pt-6 text-[12px] text-muted">
-          <span>Design concept on the Electric Foundation identity. Market data is live from the public Seer API; trading actions are simulated.</span>
-          <span className="eyebrow">Gnosis · Ethereum · Optimism · Base</span>
+        <div className="mt-8 px-4 md:px-8" aria-hidden>
+          <GiantWordmark className="-mb-[4.5%] text-signal" />
         </div>
       </div>
     </footer>
@@ -328,16 +345,16 @@ function Footer() {
 function FooterCol({ title, links }: { title: string; links: { label: string; to?: string; href?: string }[] }) {
   return (
     <div>
-      <div className="eyebrow mb-4">{title}</div>
+      <div className="mb-4 text-[13px] text-white/45">{title}</div>
       <ul className="space-y-2.5">
         {links.map((l) => (
           <li key={l.label}>
             {l.to ? (
-              <Link to={l.to} className="text-[14px] text-text-2 hover:text-text">
+              <Link to={l.to} className="text-[14px] text-white/80 hover:text-white">
                 {l.label}
               </Link>
             ) : (
-              <a href={l.href} target="_blank" rel="noreferrer" className="text-[14px] text-text-2 hover:text-text">
+              <a href={l.href} target="_blank" rel="noreferrer" className="text-[14px] text-white/80 hover:text-white">
                 {l.label}
               </a>
             )}

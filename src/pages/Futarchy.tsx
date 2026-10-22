@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { Shell, Container } from "../ui/Shell";
-import { AppGlyph, Arrow, Badge, Button, Chip, Diamond, Seg, Skeleton, cx } from "../ui/kit";
+import { Bento, BentoHead, DeviceTile, FOG, INK, PillRow, Segments, StackRows, Tile as BTile, VIOLET } from "../ui/bento";
+import { Arrow, Badge, Button, Diamond, Seg, Skeleton, cx } from "../ui/kit";
 import { LineChart } from "../ui/charts";
 import { useMarkets, useNow, type Market, type Series } from "../data/seer";
 import { date, marketPath, num, short } from "../data/market";
@@ -100,46 +101,89 @@ export default function Futarchy() {
 
   return (
     <Shell app="futarchy" wide>
-      <section className="border-b border-line bg-card">
-        <Container wide className="py-12 md:py-16">
-          <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-end">
-            <div>
-              <div className="mb-5 flex items-center gap-3">
-                <AppGlyph app="futarchy" className="h-6 w-6 text-text" />
-                <span className="text-[15px] font-medium">Futarchy</span>
-              </div>
-              <h1 className="display text-[44px] md:text-[68px]">
-                What a decision is worth,
-                <br />
-                <span className="text-muted">both ways.</span>
-              </h1>
-            </div>
-            <div>
-              <p className="text-[16px] leading-relaxed text-text-2">
-                For each proposal, two conditional markets price the DAO's token in two worlds: one where the proposal passes, one where it fails. The gap is
-                what traders expect the decision to be worth. Voters read it alongside everything else. The vote stays theirs.
+      <Bento>
+        <BentoHead
+          app="futarchy"
+          name="Futarchy"
+          title="What a decision is worth, both ways."
+          controls={
+            <PillRow
+              label="Filter by DAO"
+              value={org ?? "all"}
+              onChange={(v) => setOrg(v === "all" ? null : v)}
+              items={[{ v: "all", t: "All DAOs" }, ...ORGS.map((x) => ({ v: x.key, t: x.name }))]}
+            />
+          }
+        />
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-12">
+          <DeviceTile device="worlds" className="md:col-span-2 xl:col-span-6 xl:row-span-2 min-h-[400px]">
+            <span className="w-fit rounded-full px-3 py-1.5 text-[12px]" style={{ background: "rgb(255 255 255 / 0.12)" }}>
+              {sel.code} · {o.name} · {outcome(m)}
+            </span>
+            <div className="mt-auto max-w-[24ch] pt-20 md:max-w-[46%]">
+              <h2 className="text-[30px] leading-[1.06] tracking-[-0.03em] font-medium">{sel.title}</h2>
+              <p className="mt-5 text-[14px] leading-relaxed text-white/70">
+                Two conditional markets price {o.token} in two worlds: one where this passes, one where it fails. The gap is what traders expect the decision to be worth.
+                The vote stays with {o.name}.
               </p>
-              <div className="mt-6 flex flex-wrap gap-2">
-                <Chip active={!org} onClick={() => setOrg(null)}>
-                  All DAOs
-                </Chip>
-                {ORGS.map((x) => (
-                  <Chip key={x.key} active={org === x.key} onClick={() => setOrg(org === x.key ? null : x.key)}>
-                    {x.name}
-                  </Chip>
-                ))}
-              </div>
+              <a href="#proposal" className="mt-6 inline-flex h-11 items-center gap-2 rounded-full bg-white px-5 text-[14px] font-medium text-ink hover:bg-signal-fog">
+                Compare both worlds <Arrow className="h-4 w-4" />
+              </a>
             </div>
-          </div>
-        </Container>
-      </section>
+          </DeviceTile>
+
+          <BTile className="xl:col-span-3" title="Proposals">
+            <StackRows
+              items={list.slice(0, 3).map((p) => ({
+                key: p.id,
+                badge: p.code.split("-")[0],
+                title: p.title,
+                sub: `${p.code} · ${ORGS.find((x) => x.key === p.org)?.name}`,
+                value: outcome(byId.get(p.id)),
+                active: p.id === sel.id,
+                onClick: () => nav(`/futarchy/${p.code.toLowerCase()}`),
+              }))}
+            />
+          </BTile>
+
+          <BTile className="xl:col-span-3" title="Decided so far">
+            <p className="mt-1 mb-6 text-[13px] text-text-2">Markets inform these votes. They never cast them.</p>
+            <Segments
+              parts={(["Passed", "Rejected", "Open"] as const).map((k, i) => ({
+                label: k,
+                n: list.filter((p) => outcome(byId.get(p.id)) === k).length,
+                c: [VIOLET, INK, FOG][i],
+              }))}
+            />
+          </BTile>
+
+          <BTile className="md:col-span-2 xl:col-span-6" title="Reading both worlds">
+            <ol className="mt-5 grid gap-3 sm:grid-cols-3">
+              {[
+                { t: "Split", d: `Collateral splits into pass and fail ${o.token}.` },
+                { t: "Trade", d: "Each world gets its own price for the same token." },
+                { t: "Vote", d: "The DAO reads the gap, then votes as it always has." },
+              ].map((s, i) => (
+                <li key={s.t} className="rounded-[22px] p-4" style={{ background: i === 1 ? VIOLET : "var(--nested)", color: i === 1 ? "#fff" : undefined }}>
+                  <span className="grid h-9 w-9 place-items-center rounded-full text-[13px]" style={{ background: i === 1 ? INK : "var(--card)", color: i === 1 ? "#fff" : undefined }}>
+                    {i + 1}
+                  </span>
+                  <span className="mt-6 block text-[17px] font-medium">{s.t}</span>
+                  <span className={cx("mt-1 block text-[13px]", i === 1 ? "text-white/80" : "text-text-2")}>{s.d}</span>
+                </li>
+              ))}
+            </ol>
+          </BTile>
+        </div>
+      </Bento>
+      <span id="proposal" className="block scroll-mt-24" />
 
       <Container wide className="py-10">
         <div className="grid grid-cols-[minmax(0,1fr)] gap-8 lg:grid-cols-[320px_minmax(0,1fr)]">
           {/* Proposals */}
           <aside className="lg:sticky lg:top-24 self-start">
             <div className="eyebrow mb-3">Proposals with conditional markets</div>
-            <div className="overflow-hidden rounded-2xl border border-line bg-card">
+            <div className="overflow-hidden rounded-[30px] bg-card p-2 shadow-card">
               {list.map((p) => {
                 const mk = byId.get(p.id);
                 const st = outcome(mk);
@@ -147,7 +191,7 @@ export default function Futarchy() {
                   <button
                     key={p.id}
                     onClick={() => nav(`/futarchy/${p.code.toLowerCase()}`)}
-                    className={cx("block w-full border-b border-line px-4 py-3.5 text-left last:border-b-0 transition-colors cursor-pointer", sel.id === p.id ? "bg-nested" : "hover:bg-nested/50")}
+                    className={cx("block w-full rounded-[20px] px-4 py-3.5 text-left transition-colors cursor-pointer", sel.id === p.id ? "tone-ink" : "hover:bg-nested")}
                   >
                     <div className="flex items-center gap-2">
                       <span className="num text-[12px] text-text-2">{p.code}</span>
@@ -174,7 +218,8 @@ export default function Futarchy() {
 }
 
 function OutcomeTag({ st }: { st: string }) {
-  return st === "Open" ? <Badge tone="signal">Open</Badge> : st === "Passed" ? <Badge tone="neutral">Passed</Badge> : <Badge tone="outline">Rejected</Badge>;
+  const cls = st === "Passed" ? "bg-signal text-white" : st === "Rejected" ? "bg-text text-bg" : "border border-dashed border-line-strong text-text-2";
+  return <span className={cx("inline-flex h-8 items-center rounded-full px-3 text-[12px] whitespace-nowrap", cls)}>{st}</span>;
 }
 
 function Proposal({ p, m, org, spot, now, status }: { p: (typeof PROPOSALS)[0]; m?: Market; org: Org; spot: number; now: number; status: string }) {
@@ -211,7 +256,7 @@ function Proposal({ p, m, org, spot, now, status }: { p: (typeof PROPOSALS)[0]; 
         <Tile k={`${org.token} spot · live`} v={fmt(spot)} sub="CoinGecko" />
       </div>
 
-      <div className="rounded-2xl border border-line bg-card p-5">
+      <div className="rounded-[24px] bg-card shadow-card p-5">
         <div className="mb-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-[12px]">
           <span className="flex items-center gap-2">
             <span className="h-0.5 w-5 bg-signal" /> If it passes
@@ -235,7 +280,7 @@ function Proposal({ p, m, org, spot, now, status }: { p: (typeof PROPOSALS)[0]; 
 
       <div className="grid gap-6 xl:grid-cols-[1fr_360px]">
         {/* How to read */}
-        <div className="rounded-2xl border border-line bg-card p-6">
+        <div className="rounded-[24px] bg-card shadow-card p-6">
           <div className="text-[16px] font-medium">How the two worlds work</div>
           <div className="mt-5 grid gap-5 sm:grid-cols-3">
             {[
@@ -243,17 +288,14 @@ function Proposal({ p, m, org, spot, now, status }: { p: (typeof PROPOSALS)[0]; 
               ["Trade each world", `YES tokens trade only against YES tokens, so the YES pool prices ${org.token} in the world where it passes.`],
               ["Settle", "When the vote is final, the losing world's tokens are void and the winning world redeems 1:1."],
             ].map(([k, v], i) => (
-              <div key={k} className="relative">
-                <div className="flex items-center gap-2">
-                  <Diamond size={10} on={i === 1} />
-                  <span className="num text-[11px] text-muted">0{i + 1}</span>
-                </div>
-                <div className="mt-2 text-[14px] font-medium">{k}</div>
+              <div key={k} className={cx("relative rounded-[22px] p-4", i === 1 ? "tone-violet" : "bg-nested")}>
+                <span className={cx("num grid h-9 w-9 place-items-center rounded-full text-[13px]", i === 1 ? "bg-white text-[#7D33FF]" : "bg-card")}>{i + 1}</span>
+                <div className="mt-5 text-[16px] font-medium">{k}</div>
                 <p className="mt-1 text-[13px] leading-relaxed text-text-2">{v}</p>
               </div>
             ))}
           </div>
-          <div className="mt-6 rounded-xl bg-nested p-4 text-[13px] leading-relaxed text-text-2">
+          <div className="mt-4 rounded-[22px] tone-ink p-5 text-[13.5px] leading-relaxed text-text-2">
             <span className="font-medium text-text">Reading the gap.</span> A {num(Math.abs(edge), 1)}% premium means traders expect {org.token} to be worth that much{" "}
             {up ? "more" : "less"} if {p.code} passes. It is a forecast of one metric, not a recommendation, and it says nothing about values the token price
             doesn't capture.
@@ -261,7 +303,7 @@ function Proposal({ p, m, org, spot, now, status }: { p: (typeof PROPOSALS)[0]; 
         </div>
 
         {/* Trade */}
-        <div className="rounded-2xl border border-line bg-card p-5">
+        <div className="rounded-[24px] bg-card shadow-card p-5">
           <div className="mb-4 text-[15px] font-medium">Take a view</div>
           <Seg
             value={world}
@@ -296,7 +338,7 @@ function Proposal({ p, m, org, spot, now, status }: { p: (typeof PROPOSALS)[0]; 
       </div>
 
       {/* Governance timeline */}
-      <div className="rounded-2xl border border-line bg-card p-6">
+      <div className="rounded-[24px] bg-card shadow-card p-6">
         <div className="mb-5 flex items-center justify-between">
           <span className="text-[16px] font-medium">Decision record</span>
           <span className="eyebrow">Advisory · the DAO decides</span>
@@ -324,7 +366,7 @@ function Proposal({ p, m, org, spot, now, status }: { p: (typeof PROPOSALS)[0]; 
 
 function Tile({ k, v, sub, on }: { k: string; v: string; sub?: string; on?: boolean }) {
   return (
-    <div className={cx("rounded-2xl border bg-card p-5", on ? "border-signal" : "border-line")}>
+    <div className={cx("rounded-[24px] p-5 shadow-card", on ? "tone-violet" : "bg-card")}>
       <div className="eyebrow mb-2">{k}</div>
       <div className={cx("num text-[28px] leading-none", on && "text-signal-ink")}>{v}</div>
       {sub && <div className="mt-2 text-[12px] text-muted">{sub}</div>}
@@ -342,13 +384,13 @@ function Record({ byId, outcome }: { byId: Map<string, Market>; outcome: (m?: Ma
         </div>
         <p className="max-w-sm text-[13px] text-text-2">Outcomes are read from the Reality.eth answer each market resolved to.</p>
       </div>
-      <div className="overflow-hidden rounded-2xl border border-line bg-card">
+      <div className="overflow-hidden rounded-[30px] bg-card p-2 shadow-card">
         {PROPOSALS.map((p) => {
           const m = byId.get(p.id);
           const st = outcome(m);
           return (
-            <Link key={p.id} to={`/futarchy/${p.code.toLowerCase()}`} className="grid grid-cols-[90px_1fr_auto] md:grid-cols-[90px_120px_1fr_140px_110px] items-center gap-4 border-b border-line px-5 py-3.5 text-[13.5px] last:border-b-0 hover:bg-nested/50">
-              <span className="num text-text-2">{p.code}</span>
+            <Link key={p.id} to={`/futarchy/${p.code.toLowerCase()}`} className="grid grid-cols-[96px_1fr_auto] md:grid-cols-[96px_120px_1fr_140px_110px] items-center gap-4 rounded-[20px] px-3 py-3 text-[14.5px] transition-colors hover:bg-nested">
+              <span className="num inline-flex h-9 w-fit items-center rounded-full bg-nested px-3 text-[12.5px]">{p.code}</span>
               <span className="hidden md:block text-text-2">{ORGS.find((x) => x.key === p.org)?.name}</span>
               <span className="truncate">{p.title}</span>
               <span className="num hidden md:block text-text-2">{m?.open ? date(m.open) : "—"}</span>

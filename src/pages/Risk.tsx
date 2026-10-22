@@ -1,9 +1,10 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Shell, Container } from "../ui/Shell";
-import { AppGlyph, Arrow, Badge, Chip, Diamond, Icon, LiveTag, Seg, Skeleton, cx } from "../ui/kit";
+import { Bento, BentoHead, DeviceTile, FOG, INK, StackRows, Tile, VIOLET } from "../ui/bento";
+import { Arrow, Badge, Chip, Diamond, Icon, LiveTag, Seg, Skeleton, cx } from "../ui/kit";
 import { useLiveIds, useMarkets, useNow } from "../data/seer";
-import { date, marketPath, num, pct, short, usd } from "../data/market";
+import { date, marketPath, num, pct, usd } from "../data/market";
 import { FEATURED } from "../data/featured";
 
 /* Asset classes for the assets listed in Seer's PD market. */
@@ -54,51 +55,78 @@ export default function Risk() {
 
   return (
     <Shell app="risk" wide>
-      <section className="border-b border-line bg-card">
-        <Container wide className="py-12 md:py-16">
-          <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-end">
-            <div>
-              <div className="mb-5 flex items-center gap-3">
-                <AppGlyph app="risk" className="h-6 w-6 text-text" />
-                <span className="text-[15px] font-medium">Risk Pricing</span>
-                <LiveTag live={!!liveAt} at={liveAt} />
-              </div>
-              <h1 className="display text-[44px] md:text-[68px]">
-                Default risk,
-                <br />
-                <span className="text-muted">priced side by side.</span>
-              </h1>
-            </div>
-            <div>
-              <p className="text-[16px] leading-relaxed text-text-2">
-                One market lists {assets.length || "dozens of"} DeFi assets and one more outcome: none of them default. Every asset is priced against the others
-                and against “none”, so you can compare risks directly instead of reading a single yes-or-no price on its own.
+      <Bento>
+        <BentoHead
+          app="risk"
+          name="Risk Pricing"
+          meta={<LiveTag live={!!liveAt} at={liveAt} className="ml-2" />}
+          title="Default risk, priced side by side."
+          controls={
+            m && (
+              <Link to={marketPath(m)} className="inline-flex h-12 items-center gap-2 rounded-full bg-text px-5 text-[15px] font-medium text-bg hover:opacity-90">
+                Open the market <Arrow className="h-4 w-4" />
+              </Link>
+            )
+          }
+        />
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-12">
+          <DeviceTile device="stripes" className="md:col-span-2 xl:col-span-6 xl:row-span-2 min-h-[380px]">
+            <div className="text-[13px] text-white/60">One market, {assets.length || "many"} assets</div>
+            <div className="mt-auto max-w-[30ch] pt-24">
+              <div className="text-[13px] text-white/60">Chance that no asset defaults before 2027</div>
+              <div className="mt-2 text-[72px] leading-none tracking-[-0.04em]">{none != null ? pct(none, 1) : "—"}</div>
+              <p className="mt-5 text-[15px] leading-relaxed text-white/70">
+                Every asset is priced against the others and against “none”, so risks compare directly instead of each living in its own yes-or-no market.
               </p>
-              {m && (
-                <Link to={marketPath(m)} className="mt-5 inline-flex items-center gap-1.5 text-[13px] text-text-2 hover:text-text">
-                  Market {short(m.id)} · Gnosis <Arrow className="h-3.5 w-3.5" />
-                </Link>
-              )}
             </div>
-          </div>
+          </DeviceTile>
 
-          <div className="mt-12 grid grid-cols-2 gap-6 md:grid-cols-5">
+          <Tile className="xl:col-span-3" title="Riskiest right now" to="#spectrum">
+            <StackRows
+              items={assets.slice(0, 3).map((a) => ({
+                key: a.name,
+                badge: a.name.slice(0, 4),
+                title: a.name,
+                sub: a.cls,
+                value: pd(a.p),
+                valueSub: oneIn(a.p),
+                onClick: () => setCmp((c) => (c.includes(a.name) ? c : [a.name, ...c].slice(0, 4))),
+              }))}
+            />
+          </Tile>
+
+          <div className="grid grid-cols-2 gap-3 xl:col-span-3">
             {[
-              ["Assets priced", assets.length ? String(assets.length) : "—", "in one market"],
-              ["No asset defaults", none != null ? pct(none, 1) : "—", "before 1 Jan 2027"],
-              ["Highest", assets[0] ? `${assets[0].name} ${pd(assets[0].p)}` : "—", assets[0] ? oneIn(assets[0].p) : ""],
-              ["Median asset", assets.length ? pd(median(assets.map((a) => a.p))) : "—", "probability of default"],
-              ["Horizon", `${daysLeft} days`, "until 31 Dec 2026"],
-            ].map(([k, v, s], i) => (
-              <div key={k} className={cx("min-w-0", i > 0 && "md:border-l md:border-line md:pl-6")}>
-                <div className="eyebrow mb-2">{k}</div>
-                <div className={cx("num truncate text-[24px] md:text-[28px] leading-none", i === 1 && "text-signal-ink")}>{v}</div>
-                <div className="mt-2 text-[12px] text-muted">{s}</div>
+              { k: "Assets priced", v: assets.length ? String(assets.length) : "—", s: "in one market", bg: VIOLET, fg: "#fff" },
+              { k: "Median asset", v: assets.length ? pd(median(assets.map((a) => a.p))) : "—", s: "probability of default", bg: FOG, fg: INK },
+              { k: "Horizon", v: `${daysLeft}d`, s: "until 31 Dec 2026", bg: FOG, fg: INK },
+              { k: "Highest", v: assets[0] ? pd(assets[0].p) : "—", s: assets[0]?.name ?? "", bg: INK, fg: "#fff" },
+            ].map((x) => (
+              <div key={x.k} className="flex min-h-[132px] flex-col justify-between rounded-[24px] p-4" style={{ background: x.bg, color: x.fg }}>
+                <span className="text-[12px] opacity-70">{x.k}</span>
+                <span>
+                  <span className="block text-[30px] leading-none tracking-[-0.03em]">{x.v}</span>
+                  <span className="mt-1 block truncate text-[12px] opacity-70">{x.s}</span>
+                </span>
               </div>
             ))}
           </div>
-        </Container>
-      </section>
+
+          <Tile className="md:col-span-2 xl:col-span-6" title="Median risk by asset class">
+            <div className="mt-5 space-y-3">
+              {CLASSES.map((c) => (
+                <button key={c} onClick={() => setCls(cls === c ? null : c)} aria-pressed={cls === c} className="flex w-full items-center gap-3 text-left cursor-pointer">
+                  <span className={cx("w-36 shrink-0 text-[13px]", cls === c ? "text-signal-ink" : "text-text-2")}>{c}</span>
+                  <span className="h-8 flex-1 rounded-full bg-nested p-1">
+                    <span className="block h-full rounded-full" style={{ width: `${Math.max(6, (classMed[c] / maxP) * 100)}%`, background: cls === c ? VIOLET : INK }} />
+                  </span>
+                  <span className="w-12 text-right text-[13px]">{pd(classMed[c])}</span>
+                </button>
+              ))}
+            </div>
+          </Tile>
+        </div>
+      </Bento>
 
       <Container wide className="py-10">
         {!ready || !m ? (
@@ -106,7 +134,7 @@ export default function Risk() {
         ) : (
           <div className="space-y-12">
             {/* Spectrum */}
-            <section>
+            <section id="spectrum" className="scroll-mt-24">
               <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
                 <div>
                   <div className="eyebrow mb-2">Risk spectrum</div>
@@ -134,8 +162,8 @@ export default function Risk() {
                     {shown.length} assets · market-implied probability of default before 2027
                   </div>
                 </div>
-                <div className="overflow-hidden rounded-2xl border border-line bg-card">
-                  <div className="grid grid-cols-[1fr_auto] md:grid-cols-[140px_150px_1fr_80px_110px_40px] gap-4 border-b border-line px-5 py-3 eyebrow">
+                <div className="overflow-hidden rounded-[30px] bg-card p-2 shadow-card">
+                  <div className="grid grid-cols-[1fr_auto] md:grid-cols-[140px_150px_1fr_80px_110px_40px] gap-4 px-4 pt-3 pb-2 eyebrow">
                     <span>Asset</span>
                     <span className="hidden md:block">Class</span>
                     <span className="hidden md:block">Probability of default</span>
@@ -146,7 +174,7 @@ export default function Risk() {
                   {shown.map((a, k) => {
                     const inCmp = cmp.includes(a.name);
                     return (
-                      <div key={a.name} className="grid grid-cols-[1fr_auto_auto] md:grid-cols-[140px_150px_1fr_80px_110px_40px] items-center gap-4 border-b border-line px-5 py-2.5 text-[13.5px] last:border-b-0">
+                      <div key={a.name} className="grid grid-cols-[1fr_auto_auto] md:grid-cols-[140px_150px_1fr_80px_110px_40px] items-center gap-4 rounded-[18px] px-4 py-2.5 text-[13.5px] transition-colors hover:bg-nested">
                         <span className="font-medium">{a.name}</span>
                         <span className="hidden md:block text-[12.5px] text-text-2">{a.cls}</span>
                         <span className="relative hidden h-2 rounded-full bg-nested md:block">
@@ -185,7 +213,7 @@ export default function Risk() {
                 ["What counts as a default", "The definition is written into the market's Reality.eth question, so every trader prices the same event. Disputed answers escalate to Kleros jurors."],
                 ["Read with care", "Liquidity in this market is still thin, so small probabilities carry wide error. Treat the numbers as one input next to audits, collateral data and your own judgment."],
               ].map(([k, v]) => (
-                <div key={k} className="rounded-2xl border border-line bg-card p-6">
+                <div key={k} className="rounded-[24px] bg-card shadow-card p-6">
                   <div className="text-[15px] font-medium">{k}</div>
                   <p className="mt-2 text-[13.5px] leading-relaxed text-text-2">{v}</p>
                 </div>
@@ -205,7 +233,7 @@ function Spectrum({ assets, cls, maxP, medians, onPick, cmp }: { assets: Asset[]
   const [hover, setHover] = useState<string | null>(null);
   const ticks = [0, 1, 2, 3, 4].filter((t) => t <= maxP);
   return (
-    <div className="rounded-2xl border border-line bg-card p-5 md:p-7">
+    <div className="rounded-[24px] bg-card shadow-card p-5 md:p-7">
       <div className="space-y-1">
         {CLASSES.map((c) => {
           const xs = assets.filter((a) => a.cls === c);
@@ -267,7 +295,7 @@ function Compare({ assets, names, medians, onRemove }: { assets: Asset[]; names:
   const xs = names.map((n) => assets.find((a) => a.name === n)).filter(Boolean) as Asset[];
   const lo = xs.length ? xs.reduce((a, b) => (b.p < a.p ? b : a)) : null;
   return (
-    <div className="rounded-2xl border border-line bg-card p-5">
+    <div className="rounded-[24px] bg-card shadow-card p-5">
       <div className="mb-1 text-[15px] font-medium">Compare</div>
       <p className="mb-4 text-[12.5px] text-text-2">Pick up to three assets from the spectrum or the table.</p>
       {xs.length === 0 ? (
@@ -319,7 +347,7 @@ function Exposure({ assets }: { assets: Asset[] }) {
   const worst = calc.reduce<(typeof calc)[0] | null>((w, r) => (!w || r.v * r.a!.p > w.v * w.a!.p ? r : w), null);
 
   return (
-    <div className="rounded-2xl border border-line bg-card p-5">
+    <div className="rounded-[24px] bg-card shadow-card p-5">
       <div className="mb-1 text-[15px] font-medium">Your exposure</div>
       <p className="mb-4 text-[12.5px] text-text-2">Enter positions to read the market's view of your book.</p>
       <div className="space-y-2">
@@ -328,14 +356,14 @@ function Exposure({ assets }: { assets: Asset[] }) {
             <select
               value={r.name}
               onChange={(e) => setRows((rs) => rs.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)))}
-              className="h-10 w-28 rounded-lg border border-line-strong bg-bg px-2 text-[13px] outline-none focus:border-signal"
+              className="h-11 w-28 rounded-full border border-transparent bg-nested px-4 text-[13px] outline-none focus:border-signal"
               aria-label="Asset"
             >
               {assets.map((a) => (
                 <option key={a.name}>{a.name}</option>
               ))}
             </select>
-            <div className="flex h-10 flex-1 items-center rounded-lg border border-line-strong bg-bg px-3 focus-within:border-signal">
+            <div className="flex h-11 flex-1 items-center rounded-full border border-transparent bg-nested px-4 focus-within:border-signal">
               <span className="text-[13px] text-muted">$</span>
               <input
                 inputMode="decimal"
@@ -372,12 +400,12 @@ function Exposure({ assets }: { assets: Asset[] }) {
       </div>
 
       <div className="mt-5 grid grid-cols-2 gap-3">
-        <div className="rounded-xl border border-signal bg-signal-soft p-4">
+        <div className="rounded-[22px] tone-violet p-4">
           <div className="eyebrow mb-1.5 !text-signal-ink">Expected loss</div>
           <div className="num text-[24px] leading-none text-signal-ink">{usd(el)}</div>
           <div className="num mt-1.5 text-[11px] text-text-2">{total ? pct((el / total) * 100, 2) : "—"} of {usd(total)}</div>
         </div>
-        <div className="rounded-xl border border-line p-4">
+        <div className="rounded-[22px] bg-nested p-4">
           <div className="eyebrow mb-1.5">Any default</div>
           <div className="num text-[24px] leading-none">{pct(anyDefault * 100)}</div>
           <div className="mt-1.5 text-[11px] text-text-2">at least one holding</div>

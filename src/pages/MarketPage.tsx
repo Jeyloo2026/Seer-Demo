@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Shell, Container } from "../ui/Shell";
-import { APPS, AppGlyph, Arrow, Badge, Copy, Diamond, Empty, LiveTag, ProbBar, Seg, Skeleton, cx } from "../ui/kit";
+import { APPS, AppGlyph, Arrow, Badge, Copy, Icon, Diamond, Empty, LiveTag, ProbBar, Seg, Skeleton, cx } from "../ui/kit";
 import { LineChart } from "../ui/charts";
 import { TradeTicket } from "../ui/Trade";
 import { StatusPill } from "./Explorer";
@@ -59,36 +59,50 @@ export default function MarketPage() {
         {/* Header */}
         <div className="grid grid-cols-[minmax(0,1fr)] gap-8 lg:grid-cols-[minmax(0,1fr)_380px]">
           <div className="min-w-0">
-            <div className="mb-4 flex flex-wrap items-center gap-2">
-              <Badge tone="outline">{kind}</Badge>
-              {m.parent && <Badge tone="outline">Conditional</Badge>}
-              <Badge tone="neutral">{chainName(m.chainId)}</Badge>
-              {m.ver === "verified" ? <Badge tone="signal">Verified on Curate</Badge> : <Badge tone="neutral">{m.ver.replace("_", " ")}</Badge>}
-              <span className="ml-1">
-                <StatusPill status={status} />
-              </span>
-              <LiveTag live={!!liveAt} at={liveAt} className="ml-auto" />
+            <div className={cx("relative isolate overflow-hidden rounded-[32px] p-7 md:p-9 shadow-card", status === "Trading" ? "tone-violet" : "tone-ink")}>
+              <div className="pointer-events-none absolute -right-10 -top-10 h-56 w-56 rotate-45 rounded-[40px] border-[18px] border-white/10" aria-hidden />
+              <div className="mb-6 flex flex-wrap items-center gap-2">
+                <Badge tone="neutral">{kind}</Badge>
+                {m.parent && <Badge tone="neutral">Conditional</Badge>}
+                <Badge tone="neutral">{chainName(m.chainId)}</Badge>
+                {m.ver === "verified" ? <Badge tone="neutral">Verified on Curate</Badge> : <Badge tone="neutral">{m.ver.replace("_", " ")}</Badge>}
+                <span className="ml-1">
+                  <StatusPill status={status} />
+                </span>
+                <LiveTag live={!!liveAt} at={liveAt} className="ml-auto" />
+              </div>
+              <h1 className="max-w-[24ch] text-[30px] md:text-[44px] font-medium leading-[1.04] tracking-[-0.035em]">{stripUnit(m.name)}</h1>
+              <p className="mt-4 text-[14px] text-text-2">
+                {KIND_NOTE[kind]} {unit && <span>Unit: {unit}.</span>}
+              </p>
             </div>
-            <h1 className="text-[28px] md:text-[38px] font-medium leading-[1.08] tracking-[-0.03em]">{stripUnit(m.name)}</h1>
-            <p className="mt-3 text-[14px] text-text-2">
-              {KIND_NOTE[kind]} {unit && <span className="text-muted">Unit: {unit}.</span>}
-            </p>
 
-            <div className="mt-6 grid grid-cols-2 gap-x-6 gap-y-5 border-y border-line py-5 sm:grid-cols-4">
-              <Fig k="Volume" v={usd(m.vol)} />
-              <Fig k="Liquidity" v={usd(m.liq)} />
-              <Fig k="Open interest" v={usd(m.oi)} />
-              <Fig k={status === "Trading" ? "Answer opens" : "Opened"} v={date(m.open)} />
+            <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+              {[
+                { k: "Volume", v: usd(m.vol), cls: "bg-card" },
+                { k: "Liquidity", v: usd(m.liq), cls: "bg-card" },
+                { k: "Open interest", v: usd(m.oi), cls: "bg-card" },
+                { k: status === "Trading" ? "Answer opens" : "Opened", v: date(m.open), cls: "bg-card" },
+              ].map((x, i) => (
+                <div key={x.k} className={cx("flex min-h-[112px] flex-col justify-between rounded-[26px] p-5 shadow-card", i === 0 ? "tone-ink" : x.cls)} style={i === 3 ? { background: "#E0E2F5", color: "#14121E" } : undefined}>
+                  <span className="text-[13px] opacity-70">{x.k}</span>
+                  <span className="num text-[26px] leading-none tracking-[-0.03em]">{x.v}</span>
+                </div>
+              ))}
             </div>
 
             {homeMeta && home && (
-              <Link to={home.path} className="mt-5 flex items-center gap-3 rounded-2xl border border-line bg-card p-4 hover:border-signal">
-                <AppGlyph app={home.app} className="h-6 w-6 text-signal" />
+              <Link to={home.path} className="mt-4 flex items-center gap-4 rounded-[26px] bg-card p-4 pr-5 shadow-card transition-transform hover:-translate-y-0.5">
+                <span className="grid h-12 w-12 place-items-center rounded-full bg-text text-bg">
+                  <AppGlyph app={home.app} className="h-6 w-6" />
+                </span>
                 <span className="flex-1 text-[14px]">
                   This market has a purpose-built view in <span className="font-medium">{homeMeta.name}</span>
                   <span className="text-text-2"> · {homeMeta.line}</span>
                 </span>
-                <Arrow className="h-4 w-4 text-signal" />
+                <span className="grid h-10 w-10 place-items-center rounded-full border border-line-strong">
+                  <Arrow dir="up-right" className="h-4 w-4" />
+                </span>
               </Link>
             )}
           </div>
@@ -102,7 +116,7 @@ export default function MarketPage() {
           {/* Body */}
           <div className="min-w-0">
             {/* Chart / estimate */}
-            <div className="rounded-2xl border border-line bg-card p-5">
+            <div className="rounded-[30px] bg-card shadow-card p-6">
               <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
                 {sc && sc.value != null ? (
                   <div>
@@ -145,13 +159,13 @@ export default function MarketPage() {
             {tab === "holders" && <Holders m={m} />}
             {tab === "activity" && <Activity m={m} now={now} />}
             {tab === "raw" && (
-              <pre className="num max-h-[520px] overflow-auto rounded-2xl border border-line bg-card p-5 text-[12px] leading-5 text-text-2 scroll-thin">{JSON.stringify(m, null, 2)}</pre>
+              <pre className="num max-h-[520px] overflow-auto rounded-[24px] bg-card shadow-card p-5 text-[12px] leading-5 text-text-2 scroll-thin">{JSON.stringify(m, null, 2)}</pre>
             )}
 
             {(parent || children.length > 0) && (
               <div className="mt-8">
                 <div className="eyebrow mb-3">Conditional tree</div>
-                <div className="rounded-2xl border border-line bg-card p-4">
+                <div className="rounded-[24px] bg-card shadow-card p-4">
                   {parent && (
                     <Link to={marketPath(parent)} className="flex items-center gap-3 rounded-xl p-2 hover:bg-nested">
                       <span className="eyebrow w-16">Parent</span>
@@ -185,15 +199,6 @@ export default function MarketPage() {
   );
 }
 
-function Fig({ k, v }: { k: string; v: string }) {
-  return (
-    <div>
-      <div className="eyebrow mb-1.5">{k}</div>
-      <div className="num text-[18px]">{v}</div>
-    </div>
-  );
-}
-
 function ScalarBar({ lo, hi, v, unit }: { lo: number; hi: number; v: number; unit: string }) {
   const p = hi > lo ? ((v - lo) / (hi - lo)) * 100 : 50;
   return (
@@ -220,21 +225,36 @@ function Outcomes({ m, onHover, focus }: { m: Market; onHover: (n: string | null
   const outs = ranked(m);
   const max = Math.max(...outs.map((o) => o.p ?? 0), 1);
   return (
-    <div className="overflow-hidden rounded-2xl border border-line bg-card" onMouseLeave={() => onHover(null)}>
+    <div className="overflow-hidden rounded-[30px] bg-card p-2 shadow-card" onMouseLeave={() => onHover(null)}>
       {outs.map((o, k) => (
-        <div key={o.i} onMouseEnter={() => onHover(o.name)} className={cx("grid grid-cols-[28px_1fr_120px_64px] items-center gap-4 border-b border-line px-5 py-3 last:border-b-0", focus === o.name && "bg-nested/60")}>
-          <span className="num text-[12px] text-muted">{String(k + 1).padStart(2, "0")}</span>
-          <span className="min-w-0 truncate text-[14px]">
-            {o.won && <span className="mr-1.5 text-signal-ink">✓</span>}
-            {o.name}
+        <div
+          key={o.i}
+          onMouseEnter={() => onHover(o.name)}
+          className={cx("grid grid-cols-[40px_minmax(0,1fr)_88px] md:grid-cols-[40px_minmax(0,1fr)_200px_88px] items-center gap-4 rounded-[20px] px-3 py-2.5 transition-colors", o.won ? "tone-violet" : focus === o.name ? "bg-nested" : "hover:bg-nested")}
+        >
+          <span className={cx("num grid h-10 w-10 place-items-center rounded-full text-[13px]", o.won ? "bg-white text-[#7D33FF]" : k < 3 && !m.payout ? "bg-text text-bg" : "bg-nested text-text-2")}>{k + 1}</span>
+          <span className="min-w-0 truncate text-[15px]">{o.name}</span>
+          <span className="hidden md:block">
+            <ProbBar h={12} p={m.payout ? (o.won ? 100 : 0) : ((o.p ?? 0) / max) * 100} on={(k === 0 && !m.payout) || o.won} />
           </span>
-          <ProbBar p={m.payout ? (o.won ? 100 : 0) : ((o.p ?? 0) / max) * 100} on={(k === 0 && !m.payout) || o.won} />
-          <span className="num text-right text-[13px]">{m.payout ? (o.won ? "Won" : "—") : pct(o.p)}</span>
+          <span className="flex justify-end">
+            {m.payout ? (
+              o.won ? (
+                <span className="inline-flex h-8 items-center gap-1.5 rounded-full bg-white px-3 text-[12px] text-[#7D33FF]">
+                  <Icon name="check" className="h-3.5 w-3.5" /> Won
+                </span>
+              ) : (
+                <span className="inline-flex h-8 items-center rounded-full bg-nested px-3 text-[12px] text-text-2">Lost</span>
+              )
+            ) : (
+              <span className="num text-[16px] tracking-[-0.02em]">{pct(o.p)}</span>
+            )}
+          </span>
         </div>
       ))}
       {m.outcomes.includes("Invalid") && (
-        <div className="flex items-center gap-4 px-5 py-3 text-[12px] text-muted">
-          <span className="hatch h-3 w-6 rounded-sm" />
+        <div className="flex items-center gap-4 px-4 pt-3 pb-2 text-[12px] text-muted">
+          <span className="hatch h-3 w-6 rounded-full" />
           Invalid · redeems collateral pro rata if the question cannot be answered
         </div>
       )}
@@ -262,25 +282,25 @@ function Anatomy({ m, parent, kids }: { m: Market; parent?: Market; kids: Market
   ];
   if (!m.cond)
     return (
-      <div className="rounded-2xl border border-line bg-card p-6">
+      <div className="rounded-[24px] bg-card shadow-card p-6">
         <Skeleton className="h-40" />
       </div>
     );
   return (
     <div className="space-y-4">
-      <div className="overflow-hidden rounded-2xl border border-line bg-card">
+      <div className="overflow-hidden rounded-[30px] bg-card p-2 shadow-card">
         {rows.map(([k, v]) => (
-          <div key={k} className="grid grid-cols-[150px_1fr] gap-4 border-b border-line px-5 py-3 text-[13px] last:border-b-0">
+          <div key={k} className="grid grid-cols-[150px_1fr] gap-4 rounded-[18px] px-4 py-3 text-[13px] transition-colors hover:bg-nested">
             <span className="text-text-2">{k}</span>
             <span className="min-w-0 truncate">{v}</span>
           </div>
         ))}
       </div>
       {m.tokens?.length ? (
-        <div className="overflow-hidden rounded-2xl border border-line bg-card">
-          <div className="border-b border-line px-5 py-3 eyebrow">Outcome tokens · wrapped ERC-1155 → ERC-20</div>
+        <div className="overflow-hidden rounded-[30px] bg-card p-2 shadow-card">
+          <div className="px-4 pt-3 pb-2 eyebrow">Outcome tokens · wrapped ERC-1155 → ERC-20</div>
           {m.tokens.map((t, i) => (
-            <div key={t} className="grid grid-cols-[1fr_auto] gap-4 border-b border-line px-5 py-2.5 text-[13px] last:border-b-0">
+            <div key={t} className="grid grid-cols-[1fr_auto] gap-4 rounded-[18px] px-4 py-2.5 text-[13px] transition-colors hover:bg-nested">
               <span className="truncate">{m.outcomes[i] ?? `#${i}`}</span>
               <Addr chain={m.chainId} a={t} kind="token" />
             </div>
@@ -326,7 +346,7 @@ function Holders({ m }: { m: Market }) {
         if (!hs.length) return null;
         const tot = hs.reduce((a, h) => a + Number(h.balance) / 1e18, 0);
         return (
-          <div key={o.i} className="rounded-2xl border border-line bg-card p-4">
+          <div key={o.i} className="rounded-[24px] bg-card shadow-card p-4">
             <div className="mb-3 flex items-center justify-between">
               <span className="truncate text-[14px] font-medium">{o.name}</span>
               <span className="num text-[12px] text-muted">{pct(o.p)}</span>
@@ -362,8 +382,8 @@ function Activity({ m, now }: { m: Market; now: number }) {
     return i >= 0 ? m.outcomes[i] : short(t);
   };
   return (
-    <div className="overflow-hidden rounded-2xl border border-line bg-card">
-      <div className="hidden md:grid grid-cols-[110px_1fr_120px_120px_100px] gap-4 border-b border-line px-5 py-3 eyebrow">
+    <div className="overflow-hidden rounded-[30px] bg-card p-2 shadow-card">
+      <div className="hidden md:grid grid-cols-[110px_1fr_120px_120px_100px] gap-4 px-4 pt-3 pb-2 eyebrow">
         <span>Tx</span>
         <span>Token</span>
         <span>From</span>
@@ -371,7 +391,7 @@ function Activity({ m, now }: { m: Market; now: number }) {
         <span className="text-right">Amount</span>
       </div>
       {data.txs.slice(0, 25).map((t) => (
-        <div key={t.id} className="grid grid-cols-2 md:grid-cols-[110px_1fr_120px_120px_100px] gap-x-4 gap-y-1 border-b border-line px-5 py-2.5 text-[12.5px] last:border-b-0">
+        <div key={t.id} className="grid grid-cols-2 md:grid-cols-[110px_1fr_120px_120px_100px] gap-x-4 gap-y-1 rounded-[18px] px-4 py-2.5 text-[12.5px] transition-colors hover:bg-nested">
           <a href={explorer(m.chainId, "tx", t.tx_hash)} target="_blank" rel="noreferrer" className="num text-signal-ink hover:underline">
             {t.tx_hash.slice(0, 10)}
             <span className="ml-2 text-muted">{ago(t.timestamp, now)}</span>
@@ -397,7 +417,7 @@ function Lifecycle({ m, now }: { m: Market; now: number }) {
     { k: "Redeem", t: status === "Resolved" ? "available" : "after resolution", done: status === "Resolved" },
   ];
   return (
-    <div className="rounded-2xl border border-line bg-card p-5">
+    <div className="rounded-[24px] bg-card shadow-card p-5">
       <div className="eyebrow mb-4">Lifecycle</div>
       <ol className="relative space-y-4">
         <span className="absolute left-[5px] top-2 bottom-2 w-px bg-line" />

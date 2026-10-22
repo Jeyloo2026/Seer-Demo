@@ -29,13 +29,13 @@ export function TradeTicket({ market, initial, compact = false, labels }: { mark
 
   if (!o)
     return (
-      <div className="rounded-2xl border border-line bg-card p-5 text-[13px] text-muted">
+      <div className="rounded-[24px] bg-card shadow-card p-5 text-[13px] text-muted">
         No pool prices yet for this market. Liquidity has to be added before it can trade.
       </div>
     );
 
   return (
-    <div className={cx("rounded-2xl border border-line bg-card", compact ? "p-4" : "p-5")}>
+    <div className={cx("rounded-[24px] bg-card shadow-card", compact ? "p-4" : "p-5")}>
       <div className="mb-4 flex items-center justify-between">
         <Seg
           size="sm"
@@ -62,8 +62,8 @@ export function TradeTicket({ market, initial, compact = false, labels }: { mark
               setDone(false);
             }}
             className={cx(
-              "flex w-full items-center justify-between gap-3 rounded-xl border px-3 py-2 text-left text-[13px] transition-colors cursor-pointer",
-              x.i === sel ? "border-signal bg-signal-soft text-signal-ink" : "border-line hover:border-line-strong",
+              "flex w-full items-center justify-between gap-3 rounded-[16px] border px-3.5 py-2.5 text-left text-[13px] transition-colors cursor-pointer",
+              x.i === sel ? "border-transparent tone-violet" : "border-transparent bg-nested hover:bg-line",
             )}
           >
             <span className="truncate">{labels?.[x.i] ?? x.name}</span>
@@ -75,7 +75,7 @@ export function TradeTicket({ market, initial, compact = false, labels }: { mark
       <label className="eyebrow mb-2 block" htmlFor="amt">
         {side === "buy" ? "You pay" : "Shares to sell"}
       </label>
-      <div className="mb-2 flex items-center rounded-xl border border-line-strong bg-bg px-3 focus-within:border-signal">
+      <div className="mb-2 flex items-center rounded-[18px] border border-transparent bg-nested px-4 focus-within:border-signal">
         <input
           id="amt"
           inputMode="decimal"
